@@ -1,10 +1,9 @@
 # CMake 最低版本号要求
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 2.8)
 
 # 项目信息
 project(ecs)
 
-set(CMAKE_CXX_STANDARD 11)
 # include路径
 include_directories(${PROJECT_SOURCE_DIR}/lib)
 
@@ -24,5 +23,4 @@ SET(CMAKE_CXX_FLAGS_RELEASE "$ENV{CXXFLAGS} -O3 -Wall -std=c++11")
 aux_source_directory(. DIR_SRCS)
 
 # 指定生成目标
-add_executable(ecs ${DIR_SRCS} flavorInfo.h)
-
+add_executable(ecs ${DIR_SRCS})

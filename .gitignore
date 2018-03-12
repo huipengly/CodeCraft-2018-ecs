@@ -31,6 +31,7 @@
 *.exe
 *.out
 *.app
+**/bin
 
 # CMake files
 CMakeCache.txt
@@ -45,4 +46,3 @@ CTestTestfile.cmake
 
 # Clion files
 **/cmake-build-*
-**/.idea
