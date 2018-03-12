@@ -1,7 +1,6 @@
 #include "predict.h"
 #include <stdio.h>
 #include <iostream>
-#include <ctime>
 #include "cstring"
 
 using namespace std;
@@ -15,10 +14,15 @@ struct tm predict_start_time = {0};             //预测开始时间
 struct tm predict_end_time = {0};                      //预测结束时间
 int info_status = 0;
 
+//flavor训练信息
+HistoryDemand history_demand[MAX_DATA_NUM] = {0};
+
 //你要完成的功能总入口
 void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int data_num, char * filename)
 {
     readInfo(info);
+
+    readData(data, data_num);
 
 	// 需要输出的内容
 	char * result_file = (char *)"5\nflavor1 1\nflavor2 1\nflavor3 1\nflavor4 2\nflavor5 2\n\n1 flavor1 1 flavor2 1 flavor3 1 flavor4 2 flavor5 2";
@@ -31,7 +35,7 @@ void readInfo(char * info[MAX_INFO_NUM])
 {
     int temp_flavor = -1;
     int flavor_number = 0;
-    char *tempstring = nullptr;
+//    char *tempstring = nullptr;
     sscanf(info[0], "%d %d", &physical_machine.cpu, &physical_machine.memory);                      //物理机信息
     sscanf(info[2], "%d", &flavor_number);                                                          //需要预测的个数
     for(int i = 3; i < 3 + flavor_number; i++)                                                      //需要预测的种类
@@ -45,7 +49,12 @@ void readInfo(char * info[MAX_INFO_NUM])
     predict_day = (mktime(&predict_end_time) - mktime(&predict_start_time)) / (60 * 60 * 24);       //计算预测天数
 }
 
-void readData(char * data[MAX_INFO_NUM], int data_num)
+void readData(char * data[MAX_INFO_NUM], int &data_num)
 {
-
+    char temp_time[50];
+    for(int i = 0; i < data_num; i++)
+    {
+        sscanf(data[i],"%*[a-z0-9-]\tflavor%d\t%s", &history_demand[i].type, temp_time);
+        strptime(temp_time, "%Y-%m-%d %H:%M:%S", &history_demand[i].create_time);
+    }
 }
