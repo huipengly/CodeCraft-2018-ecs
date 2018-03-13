@@ -4,11 +4,11 @@
 
 #include "matrix.h"
 
-bool Gauss(float *A, float *B, int n)
+bool Gauss(double *A, double *B, int n)
 {
     int i, j, k;
-    float max, temp;
-    float t[1000000];                //临时矩阵
+    double max, temp;
+    double t[1000000];                //临时矩阵
     //将A矩阵存放在临时矩阵t[n][n]中
     for (i = 0; i < n; i++)
     {
@@ -83,7 +83,7 @@ bool Gauss(float *A, float *B, int n)
 
 bool matrix_mul(double* A, int A_rows, int A_cols, double* B, int B_rows, int B_cols, double *result)
 {
-    if(A_cols != B_cols)    //A的列数要等于B的行数
+    if(A_cols != B_rows)    //A的列数要等于B的行数
     {
         return false;
     }
