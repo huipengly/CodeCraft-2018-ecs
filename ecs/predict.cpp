@@ -1,4 +1,5 @@
 #include "predict.h"
+#include "matrix.h"
 #include <stdio.h>
 #include <iostream>
 #include "cstring"
@@ -23,6 +24,16 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
     readInfo(info);
 
     readData(data, data_num);
+
+//    double a[] = {1, 2, 3, 4, 5, 6};
+//    double b[] = {4, 3, 2, 1};
+//    double *res = new double[3 * 2];
+//
+//    matrix_mul(a, 3, 2, b, 2, 2, res);
+
+//    double a[] = {1, 2, 3, 4, 5, 6,7,8,9};
+//    double *b = new double[3*3];
+//    matrix_trans(a, 3, 3, b);
 
 	// 需要输出的内容
 	char * result_file = (char *)"5\nflavor1 1\nflavor2 1\nflavor3 1\nflavor4 2\nflavor5 2\n\n1 flavor1 1 flavor2 1 flavor3 1 flavor4 2 flavor5 2";

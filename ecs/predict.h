@@ -3,6 +3,7 @@
 
 #include "lib_io.h"
 #include <ctime>
+#include "matrix.h"
 
 //物理机信息
 class PhysicalMachine
