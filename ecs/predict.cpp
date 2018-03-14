@@ -4,6 +4,7 @@
 #include <iostream>
 #include "cstring"
 #include <vector>
+#include <algorithm>
 
 using namespace std;
 
@@ -38,9 +39,16 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
     int mydata_num = 50;
     
     //最小二乘拟合
-    int fun_num = 18;
+    //inv(H_inv*H)*H'*(temp);
+    int fun_num = 16;       //函数阶数
     double *H = new double[(mydata_num-fun_num)*fun_num];
-//    double H[(31)*19] = {0};
+    double *H_trans = new double[fun_num*(mydata_num-fun_num)]();
+    double *HH = new double[fun_num * fun_num]();
+    double *HH_inv = new double[fun_num * fun_num]();
+    double *res1 = new double[fun_num * (mydata_num - fun_num)]();
+//    double *parameter = new double[fun_num]();
+    double parameter[18];
+
     for(int i = 0; i < mydata_num - fun_num; i++ )
     {
         for(int j = 0; j < fun_num; j++)
@@ -49,27 +57,19 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
         }
     }
 
-    //inv(H'*H)*H'*(temp);
-    double *H_trans = new double[fun_num*(mydata_num-fun_num)]();
     matrix_trans(H, mydata_num-fun_num, fun_num, H_trans);
-
-    double *HH = new double[fun_num * fun_num]();
     matrix_mul(H_trans, fun_num, mydata_num-fun_num, H, mydata_num-fun_num, fun_num, HH);
-
-    double *HH_inv = new double[fun_num * fun_num]();
     bool te = Gauss(HH, HH_inv, fun_num);
-
-    double *res1 = new double[fun_num * (mydata_num - fun_num)]();
     matrix_mul(HH_inv, fun_num, fun_num, H_trans, fun_num, mydata_num-fun_num, res1);
-
-    double *res = new double[fun_num]();
-//    double res[19] = {0};
-    matrix_mul(res1, fun_num, mydata_num-fun_num, mydata+fun_num, mydata_num-fun_num, 1, res);
+    matrix_mul(res1, fun_num, mydata_num-fun_num, mydata+fun_num, mydata_num-fun_num, 1, parameter);
 
     //预测
+    double mydata_last_fun_num[18];//最后fun_num个数据，反向存储
     for(int i = 0; i < predict_day; i++)
     {
-//        predict[2][i] =
+        reverse_copy(mydata+mydata_num-fun_num, mydata+mydata_num, mydata_last_fun_num);
+        matrix_mul(mydata_last_fun_num, 1, fun_num, parameter, fun_num, 1, &mydata[mydata_num]);
+        mydata_num++;
     }
 
 	// 需要输出的内容
