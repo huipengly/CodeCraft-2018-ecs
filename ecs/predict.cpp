@@ -39,9 +39,9 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
     int mydata_num = 50;
     
     //最小二乘拟合
-    int fun_num = 19;
-//    double *H = new double[(mydata_num-fun_num)*fun_num];
-    double H[(31)*19] = {0};
+    int fun_num = 18;
+    double *H = new double[(mydata_num-fun_num)*fun_num];
+//    double H[(31)*19] = {0};
     for(int i = 0; i < mydata_num - fun_num; i++ )
     {
         for(int j = 0; j < fun_num; j++)
@@ -51,29 +51,20 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
     }
 
     //inv(H'*H)*H'*(temp);
-//    double *H_trans = new double[fun_num*(mydata_num-fun_num)];
-    double H_trans[19*(31)] = {0};
-    memset(H_trans,0,sizeof(H_trans));
+    double *H_trans = new double[fun_num*(mydata_num-fun_num)]();
     matrix_trans(H, mydata_num-fun_num, fun_num, H_trans);
 
-//    double *HH = new double[fun_num * fun_num];
-    double HH[19 * 19] = {0};
-    memset(HH,0,sizeof(HH));
+    double *HH = new double[fun_num * fun_num]();
     matrix_mul(H_trans, fun_num, mydata_num-fun_num, H, mydata_num-fun_num, fun_num, HH);
 
-//    double *HH_inv = new double[fun_num * fun_num];
-    double HH_inv[19 * 19] = {0};
-    memset(HH_inv,0,sizeof(HH_inv));
-    bool te = Gauss(HH, HH_inv, fun_num);//FIXME:19阶在这里有bug
+    double *HH_inv = new double[fun_num * fun_num]();
+    bool te = Gauss(HH, HH_inv, fun_num);
 
-//    double *res1 = new double[fun_num * (mydata_num - fun_num)];
-    double res1[19 * (31)] = {0};
-    memset(res1,0,sizeof(res1));
+    double *res1 = new double[fun_num * (mydata_num - fun_num)]();
     matrix_mul(HH_inv, fun_num, fun_num, H_trans, fun_num, mydata_num-fun_num, res1);
 
-//    double *res = new double[fun_num];
-    double res[19] = {0};
-    memset(res,0,sizeof(res));
+    double *res = new double[fun_num]();
+//    double res[19] = {0};
     matrix_mul(res1, fun_num, mydata_num-fun_num, mydata+fun_num, mydata_num-fun_num, 1, res);
 
 	// 需要输出的内容
