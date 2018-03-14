@@ -24,6 +24,6 @@ public:
 void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int data_num, char * filename);
 void readInfo(char * info[MAX_INFO_NUM]);
 void readData(char * data[MAX_INFO_NUM], int &data_num);
-int diffday(struct tm end, struct tm start);        //计算日期差
+int diffDay(struct tm end, struct tm start);        //计算日期差
 
 #endif
