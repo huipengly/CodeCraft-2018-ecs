@@ -3,21 +3,26 @@
 #include <stdio.h>
 #include <iostream>
 #include "cstring"
+#include <vector>
 
 using namespace std;
 
 //输入信息
 PhysicalMachine physical_machine;               //物理机信息
 bool flavor_type_to_predict[16] = {false};     //需要预测的虚拟机类型，共15中，需要预测的为true。0代表flavor0， 1代表flavor1
-char resources_to_optimize[4];                 //0为优化cpu，1为优化memory
+char *resources_to_optimize = new char[4]();   //0为优化cpu，1为优化memory
 int predict_day = 0;                            //预测时间范围
 struct tm predict_start_time = {0};             //预测开始时间
 struct tm predict_end_time = {0};                      //预测结束时间
 int info_status = 0;
 
 //flavor训练信息
-HistoryDemand history_demand[MAX_DATA_NUM] = {0};
+//FlavorDemand history_demand[MAX_DATA_NUM] = {0};
+vector<vector<FlavorDemand>> history_demand(MAX_INFO_NUM);
 
+//预测信息
+vector<vector<FlavorDemand>> predict_demand(MAX_INFO_NUM);
+extern char *strptime(const char *buf, const char *fmt, struct tm *tm);
 //你要完成的功能总入口
 void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int data_num, char * filename)
 {
@@ -87,7 +92,6 @@ void readInfo(char * info[MAX_INFO_NUM])
 {
     int temp_flavor = -1;
     int flavor_number = 0;
-//    char *tempstring = nullptr;
     sscanf(info[0], "%d %d", &physical_machine.cpu, &physical_machine.memory);                      //物理机信息
     sscanf(info[2], "%d", &flavor_number);                                                          //需要预测的个数
     for(int i = 3; i < 3 + flavor_number; i++)                                                      //需要预测的种类
@@ -98,15 +102,18 @@ void readInfo(char * info[MAX_INFO_NUM])
     strcpy(resources_to_optimize, info[3 + flavor_number + 1]);
     strptime(info[3 + flavor_number + 3], "%Y-%m-%d %H:%M:%S", &predict_start_time);                //开始时间
     strptime(info[3 + flavor_number + 4], "%Y-%m-%d %H:%M:%S", &predict_end_time);                  //结束时间
-    predict_day = (mktime(&predict_end_time) - mktime(&predict_start_time)) / (60 * 60 * 24);       //计算预测天数
+    predict_day = static_cast<int>(
+            (static_cast<long>(mktime(&predict_end_time)) - static_cast<long>(mktime(&predict_start_time))) / (60 * 60 * 24));       //计算预测天数
 }
 
 void readData(char * data[MAX_INFO_NUM], int &data_num)
 {
     char temp_time[50];
+    FlavorDemand temp_history_demand = {0};
     for(int i = 0; i < data_num; i++)
     {
-        sscanf(data[i],"%*[a-z0-9-]\tflavor%d\t%s", &history_demand[i].type, temp_time);
-        strptime(temp_time, "%Y-%m-%d %H:%M:%S", &history_demand[i].create_time);
+        sscanf(data[i],"%*[a-z0-9-]\tflavor%d\t%s", &temp_history_demand.type, temp_time);
+        strptime(temp_time, "%Y-%m-%d %H:%M:%S", &temp_history_demand.create_time);
+        history_demand[temp_history_demand.type].push_back(temp_history_demand);
     }
 }

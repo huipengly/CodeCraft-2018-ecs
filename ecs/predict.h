@@ -14,7 +14,7 @@ public:
     int disk;
 };
 
-class HistoryDemand
+class FlavorDemand
 {
 public:
     int type;
