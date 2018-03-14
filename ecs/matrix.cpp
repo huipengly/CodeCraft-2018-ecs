@@ -8,7 +8,7 @@ bool Gauss(double *A, double *B, int n)
 {
     int i, j, k;
     double max, temp;
-    double t[1000000];                //临时矩阵
+    double t[90000];                //临时矩阵
     //将A矩阵存放在临时矩阵t[n][n]中
     for (i = 0; i < n; i++)
     {
