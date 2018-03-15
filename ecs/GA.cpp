@@ -70,7 +70,7 @@ double population_decoding()
 }
 
 //物理机数目就是cut_position.size()
-double gene_deconding(vector<int> gene, vector<int> cut_positon)
+double gene_deconding(vector<int> gene, vector<int> &cut_positon)
 {
     int cpu_sum(0), mem_sum(0);
     for(auto it = gene.begin(); it != gene.end(); ++it)
@@ -89,6 +89,7 @@ double gene_deconding(vector<int> gene, vector<int> cut_positon)
 
     if(strcmp(resources_to_optimize, "CPU") != 0)
     {
+        cut_positon.push_back(123);
         return (resouces_needed)/((cut_positon.size()+1) * physical_machine.cpu);
     }
     else if (strcmp(resources_to_optimize, "MEM") != 0)
