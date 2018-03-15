@@ -1,6 +1,7 @@
 #include "predict.h"
 #include "matrix.h"
 #include "flavorInfo.h"
+#include "GA.h"
 #include <stdio.h>
 #include <iostream>
 #include "cstring"
@@ -30,7 +31,7 @@ int train_day = 0;                              //训练持续时间
 //预测信息
 vector<vector<FlavorDemand>> predict_demand(MAX_INFO_NUM);
 double predict[MAX_INFO_NUM][MAX_DATA_NUM] = {0};
-int predict_demand_int[MAX_INFO_NUM] = {0};
+vector<int> vec_predict_demand(16, 0);
 
 
 //你要完成的功能总入口
@@ -75,7 +76,9 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
                 {
                     //无法求逆就减小阶数
                     fun_num--;
+#ifdef _DEBUG
                     cout << "Gauss fault!" << endl;
+#endif
                     continue;
                 };
                 matrix_mul(HH_inv, fun_num, fun_num, H_trans, fun_num, mydata_num - fun_num, res1);
@@ -87,7 +90,7 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
                 {
                     reverse_copy(&mydata[mydata_num - fun_num], &mydata[mydata_num], mydata_last_fun_num);
                     matrix_mul(mydata_last_fun_num, 1, fun_num, parameter, fun_num, 1, &mydata[mydata_num]);
-                    predict_demand_int[flavor] += static_cast<int>(round(mydata[mydata_num]));
+                    vec_predict_demand[flavor] += static_cast<int>(round(mydata[mydata_num]));
                     mydata_num++;
                 }
                 break;//可以求逆就输出结果
@@ -95,7 +98,8 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
         }
     }
 
-
+    vector<vector<int>> vec_outputs;
+    genetic_algorithm(vec_predict_demand, vec_outputs, 50);
 
 	// 需要输出的内容
 	char * result_file = (char *)"5\nflavor1 1\nflavor2 1\nflavor3 1\nflavor4 2\nflavor5 2\n\n1 flavor1 1 flavor2 1 flavor3 1 flavor4 2 flavor5 2";
