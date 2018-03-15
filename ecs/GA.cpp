@@ -72,8 +72,9 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
     cout << roulette_choose() << endl;
 
     //交叉
-//    order_crossover(1, 2, children);
+    order_crossover(1, 2, children);
 
+    //变异
     children = population;
     variation();
 
@@ -172,30 +173,58 @@ void order_crossover(int parents1, int parents2, vector<vector<int>> children)
     swap_ranges(it1 + crossover_start, it1 + crossover_end, it2 + crossover_start);
 
     //临时基因变量，存储的是从变异尾端到基因尾端再加上一段完整的父代基因，用来顺序加入新基因
-    vector<int> temp_gene;
-    copy(population[parents1].begin() + crossover_end, population[parents1].end(), back_inserter(temp_gene));
-    copy(population[parents1].begin(), population[parents1].end(), back_inserter(temp_gene));
-    auto it_temp_gene = temp_gene.begin();
+    vector<int> temp_gene11;
+    copy(population[parents1].begin() + crossover_end, population[parents1].end(), back_inserter(temp_gene11));
+    copy(population[parents1].begin(), population[parents1].end(), back_inserter(temp_gene11));
+    auto it_temp_gene = temp_gene11.begin();
     //填入剩余序列
     for(auto it = (child1.begin() + crossover_end); it != child1.end(); ++it)
     {
-
+        int diss = distance(it, child1.end());
 //        auto isEven = [](int i){int aba = *it_temp_gene;return i == aba;};
         //FIXME:any_of调用bug
-        auto itt = population[parents1].begin();
-        auto ittt = population[parents1].end();
-        bool aaaa = binary_search(population[1].begin(), population[1].end(), *population[1].begin());
-        int a = 1;
+//        auto itt = population[parents1].begin();
+//        auto ittt = population[parents1].end();
+        while(true)
+        {
+            bool aaaa = binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene);
+            if(!aaaa)
+            {
+                break;
+            }
+            ++it_temp_gene;
+        }
+//        int a = 1;
 //        while(any_of(population[parents1][crossover_start], population[parents1][crossover_end], [](int i){ return i == aba; }));
 //        --it_temp_gene;
-//        it = it_temp_gene;
+        *it = *it_temp_gene;
+        ++it_temp_gene;
+
+
     }
-//    for(auto it = child1.begin(); it != (child1.begin() + crossover_start); ++it)
-//    {
-//        while(any_of(population[parents1][crossover_start], population[parents1][crossover_end], it_temp_gene++));
+    for(auto it = child1.begin(); it != (child1.begin() + crossover_start); ++it)
+    {
+        int diss = distance(it, child1.end());
+//        auto isEven = [](int i){int aba = *it_temp_gene;return i == aba;};
+        //FIXME:any_of调用bug
+//        auto itt = population[parents1].begin();
+//        auto ittt = population[parents1].end();
+        while(true)
+        {
+            bool aaaa = binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene);
+            if(!aaaa)
+            {
+                break;
+            }
+            ++it_temp_gene;
+        }
+//        int a = 1;
+//        while(any_of(population[parents1][crossover_start], population[parents1][crossover_end], [](int i){ return i == aba; }));
 //        --it_temp_gene;
-//        it = it_temp_gene;
-//    }
+        *it = *it_temp_gene;
+        ++it_temp_gene;
+    }
+    int i = 0;
 //    for(auto it = (child2.begin() + crossover_end); it != child2.end(); ++it)
 //    {
 //        while(any_of(population[parents2][crossover_start], population[parents2][crossover_end], it_temp_gene++));
@@ -213,7 +242,7 @@ void order_crossover(int parents1, int parents2, vector<vector<int>> children)
 //变异点间倒序变异
 void variation()
 {
-    for(int i = 0; i < children.size(); ++i)
+    for(int i = 0; i < static_cast<int>(children.size()); ++i)
     {
         double rand_num = 1.0 * rand() / RAND_MAX;
 
