@@ -106,17 +106,20 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
     vector<vector<int>> vec_outputs;
     genetic_algorithm(vec_predict_demand, vec_outputs, 50);
 
-    int ps_num(0);
+    int flavor_num(0);
 
     for(int i = 0; i < vec_outputs.size(); ++i)
     {
-        ps_num += vec_outputs[i].size();
+        for(int j = 0; j < vec_outputs[i].size(); ++j)
+        {
+            flavor_num += vec_outputs[i][j];
+        }
     }
 
     //输出
     char result_file[100000] = "";
     char str_tmp[100] = "";
-    sprintf(str_tmp,"%d\n",ps_num);
+    sprintf(str_tmp,"%d\n",flavor_num);
     strcat(result_file,str_tmp);
     for(int i = 0; i < 16; i ++)
     {
