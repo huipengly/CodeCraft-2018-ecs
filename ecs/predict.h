@@ -3,20 +3,19 @@
 
 #include "lib_io.h"
 #include <ctime>
-#include "matrix.h"
 
 //物理机信息
-class PhysicalMachine
+struct PhysicalMachine
 {
-public:
+//public:
     int cpu;
     int memory;
     int disk;
 };
 
-class FlavorDemand
+struct FlavorDemand
 {
-public:
+//public:
     int type;
     struct tm create_time;
 };

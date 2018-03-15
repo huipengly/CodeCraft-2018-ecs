@@ -1,5 +1,6 @@
 #include "predict.h"
 #include "matrix.h"
+#include "flavorInfo.h"
 #include <stdio.h>
 #include <iostream>
 #include "cstring"
@@ -29,6 +30,8 @@ int train_day = 0;                              //训练持续时间
 //预测信息
 vector<vector<FlavorDemand>> predict_demand(MAX_INFO_NUM);
 double predict[MAX_INFO_NUM][MAX_DATA_NUM] = {0};
+int predict_demand_int[MAX_INFO_NUM] = {0};
+
 
 //你要完成的功能总入口
 void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int data_num, char * filename)
@@ -84,6 +87,7 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
                 {
                     reverse_copy(&mydata[mydata_num - fun_num], &mydata[mydata_num], mydata_last_fun_num);
                     matrix_mul(mydata_last_fun_num, 1, fun_num, parameter, fun_num, 1, &mydata[mydata_num]);
+                    predict_demand_int[flavor] += static_cast<int>(round(mydata[mydata_num]));
                     mydata_num++;
                 }
                 break;//可以求逆就输出结果
