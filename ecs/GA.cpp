@@ -94,9 +94,12 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
 
     //TODO:保留历史最优，最优保留遗传
     //从最后一代中选择输出
+    vector<double>::iterator result;
+    result = max_element(utilization.begin(), utilization.end());
+    int temp_dis = distance(utilization.begin(), result);
 //    utilization.ma
 
-//    int i = 0;
+    int i = 0;
 }
 
 void value()
@@ -170,7 +173,7 @@ int roulette_choose()
 }
 
 //顺序交叉
-void order_crossover(int parents1, int parents2, vector<vector<int>> children)
+void order_crossover(int parents1, int parents2, vector<vector<int>> &children)
 {
     vector<int> child1, child2;
     child1 = population[parents1];
