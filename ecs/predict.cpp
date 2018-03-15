@@ -92,10 +92,10 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
        double mydata_last_fun_num[MAX_FUNCTION_NUM] = {0};//最后fun_num个数据，反向存储
        for (int i = 0; i < predict_day; i++)
        {
-  reverse_copy(&mydata[mydata_num - fun_num], &mydata[mydata_num], mydata_last_fun_num);
-  matrix_mul(mydata_last_fun_num, 1, fun_num, parameter, fun_num, 1, &mydata[mydata_num]);
-  vec_predict_demand[flavor] += static_cast<int>(round(mydata[mydata_num]));
-  mydata_num++;
+          reverse_copy(&mydata[mydata_num - fun_num], &mydata[mydata_num], mydata_last_fun_num);
+          matrix_mul(mydata_last_fun_num, 1, fun_num, parameter, fun_num, 1, &mydata[mydata_num]);
+          vec_predict_demand[flavor] += static_cast<int>(round(mydata[mydata_num]));
+          mydata_num++;
        }
        break;//可以求逆就输出结果
    }

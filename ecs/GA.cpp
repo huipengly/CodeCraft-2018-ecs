@@ -21,6 +21,7 @@ vector<vector<int>> children;           //子种群
 vector<double> utilization;             //种群利用率
 vector<double> fitness_value;           //适值
 vector<double> roulette;                //轮盘赌概率区间
+const int variation_rate = 1;        //变异率
 
 void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outputs, int population_size)
 {
@@ -71,7 +72,10 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
     cout << roulette_choose() << endl;
 
     //交叉
-    order_crossover(1, 2, children);
+//    order_crossover(1, 2, children);
+
+    children = population;
+    variation();
 
     int i = 0;
 }
@@ -154,8 +158,8 @@ void order_crossover(int parents1, int parents2, vector<vector<int>> children)
     child2 = population[parents2];
 
     //交换变量为start开始到end前一个，最后一个量不进行交换
-    int crossover_start = static_cast<int>(floor(1.0 * population.size() * rand() / RAND_MAX));
-    int crossover_end = static_cast<int>(floor(1.0 * population.size() * rand() / RAND_MAX));
+    int crossover_start = static_cast<int>(floor(1.0 * population[parents1].size() * rand() / RAND_MAX));
+    int crossover_end = static_cast<int>(floor(1.0 * population[parents1].size() * rand() / RAND_MAX));
 
     if(crossover_start > crossover_end)
     {
@@ -175,10 +179,16 @@ void order_crossover(int parents1, int parents2, vector<vector<int>> children)
     //填入剩余序列
     for(auto it = (child1.begin() + crossover_end); it != child1.end(); ++it)
     {
+
+//        auto isEven = [](int i){int aba = *it_temp_gene;return i == aba;};
         //FIXME:any_of调用bug
-        while(any_of(&population[parents1][crossover_start], &population[parents1][crossover_end], it_temp_gene));
-        --it_temp_gene;
-        it = it_temp_gene;
+        auto itt = population[parents1].begin();
+        auto ittt = population[parents1].end();
+        bool aaaa = binary_search(population[1].begin(), population[1].end(), *population[1].begin());
+        int a = 1;
+//        while(any_of(population[parents1][crossover_start], population[parents1][crossover_end], [](int i){ return i == aba; }));
+//        --it_temp_gene;
+//        it = it_temp_gene;
     }
 //    for(auto it = child1.begin(); it != (child1.begin() + crossover_start); ++it)
 //    {
@@ -198,4 +208,27 @@ void order_crossover(int parents1, int parents2, vector<vector<int>> children)
 //        --it_temp_gene;
 //        it = it_temp_gene;
 //    }
+}
+
+//变异点间倒序变异
+void variation()
+{
+    for(int i = 0; i < children.size(); ++i)
+    {
+        double rand_num = 1.0 * rand() / RAND_MAX;
+
+        if (rand_num < variation_rate)
+        {
+            //为什么迭代器不能.size？
+            int variation_start = static_cast<int>(floor(1.0 * children[i].size() * rand() / RAND_MAX));
+            int variation_end = static_cast<int>(floor(1.0 * children[i].size() * rand() / RAND_MAX));
+
+            if(variation_start > variation_end)
+            {
+                swap(variation_start, variation_end);
+            }
+
+            reverse(children[i].begin() + variation_start, children[i].begin() + variation_end);
+        }
+    }
 }
