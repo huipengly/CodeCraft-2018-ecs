@@ -20,6 +20,7 @@ double gene_deconding(vector<int> gene, vector<int> &cut_positon);
 void value();                   //计算整个种群适值
 void roulette_build();          //轮盘构造
 int roulette_choose();          //轮盘赌选择一个数
+void order_crossover(int parents1, int parents2, vector<vector<int>> children);
 
 
 #endif //ECS_GA_H

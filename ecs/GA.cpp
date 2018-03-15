@@ -17,6 +17,7 @@ extern FlaverInfo flavor_info[16];
 int resouces_needed = 0;                //需要的最小资源，根据优化量来算
 vector<int> flavors_to_place;           //把每个flavor的数目拆成需求序列，序列每一个元素为一个需求
 vector<vector<int>> population;         //种群基因，遗传算法基因，顺序序列
+vector<vector<int>> children;           //子种群
 vector<double> utilization;             //种群利用率
 vector<double> fitness_value;           //适值
 vector<double> roulette;                //轮盘赌概率区间
@@ -69,6 +70,9 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
     roulette_build();
     cout << roulette_choose() << endl;
 
+    //交叉
+    order_crossover(1, 2, children);
+
     int i = 0;
 }
 
@@ -112,12 +116,11 @@ double gene_deconding(vector<int> gene, vector<int> &cut_positon)
 
     if(strcmp(resources_to_optimize, "CPU") != 0)
     {
-//        cut_positon.push_back(123);
         return static_cast<double>(resouces_needed)/((cut_positon.size()+1) * physical_machine.cpu);
     }
     else if (strcmp(resources_to_optimize, "MEM") != 0)
     {
-        return (resouces_needed)/(cut_positon.size() * physical_machine.memory);
+        return static_cast<double>(resouces_needed)/(cut_positon.size() * physical_machine.memory);
     }
     else
     {
@@ -141,4 +144,58 @@ int roulette_choose()
     double rand_num = static_cast<double>(rand()) / RAND_MAX;
     return static_cast<int>(distance(roulette.begin(), upper_bound(roulette.begin(), roulette.end(), rand_num)));
     //upper_bound返回指向第一个大于给定值的元素的迭代器
+}
+
+//顺序交叉
+void order_crossover(int parents1, int parents2, vector<vector<int>> children)
+{
+    vector<int> child1, child2;
+    child1 = population[parents1];
+    child2 = population[parents2];
+
+    //交换变量为start开始到end前一个，最后一个量不进行交换
+    int crossover_start = static_cast<int>(floor(1.0 * population.size() * rand() / RAND_MAX));
+    int crossover_end = static_cast<int>(floor(1.0 * population.size() * rand() / RAND_MAX));
+
+    if(crossover_start > crossover_end)
+    {
+        swap(crossover_start, crossover_end);
+    }
+
+    //交换变异段
+    auto it1 = child1.begin();
+    auto it2 = child2.begin();
+    swap_ranges(it1 + crossover_start, it1 + crossover_end, it2 + crossover_start);
+
+    //临时基因变量，存储的是从变异尾端到基因尾端再加上一段完整的父代基因，用来顺序加入新基因
+    vector<int> temp_gene;
+    copy(population[parents1].begin() + crossover_end, population[parents1].end(), back_inserter(temp_gene));
+    copy(population[parents1].begin(), population[parents1].end(), back_inserter(temp_gene));
+    auto it_temp_gene = temp_gene.begin();
+    //填入剩余序列
+    for(auto it = (child1.begin() + crossover_end); it != child1.end(); ++it)
+    {
+        //FIXME:any_of调用bug
+        while(any_of(&population[parents1][crossover_start], &population[parents1][crossover_end], it_temp_gene));
+        --it_temp_gene;
+        it = it_temp_gene;
+    }
+//    for(auto it = child1.begin(); it != (child1.begin() + crossover_start); ++it)
+//    {
+//        while(any_of(population[parents1][crossover_start], population[parents1][crossover_end], it_temp_gene++));
+//        --it_temp_gene;
+//        it = it_temp_gene;
+//    }
+//    for(auto it = (child2.begin() + crossover_end); it != child2.end(); ++it)
+//    {
+//        while(any_of(population[parents2][crossover_start], population[parents2][crossover_end], it_temp_gene++));
+//        --it_temp_gene;
+//        it = it_temp_gene;
+//    }
+//    for(auto it = child2.begin(); it != (child2.begin() + crossover_start); ++it)
+//    {
+//        while(any_of(population[parents2][crossover_start], population[parents2][crossover_end], it_temp_gene++));
+//        --it_temp_gene;
+//        it = it_temp_gene;
+//    }
 }
