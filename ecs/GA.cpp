@@ -8,19 +8,22 @@
 #include <random>
 #include <string>
 #include <cstring>
+#include <iostream>
 
 using namespace std;
 
 extern FlaverInfo flaver_info[16];
-std::random_device rd;
-int resouces_needed = 0;            //需要的最小资源，根据优化量来算
-vector<int> flavors_to_place;   //把每个flavor的数目拆成需求序列，序列每一个元素为一个需求
-vector<vector<int>> population; //种群基因
-vector<int> gene;               //遗传算法基因，顺序序列
+//std::random_device rd;
+int resouces_needed = 0;                //需要的最小资源，根据优化量来算
+vector<int> flavors_to_place;           //把每个flavor的数目拆成需求序列，序列每一个元素为一个需求
+vector<vector<int>> population;         //种群基因
+vector<int> gene;                       //遗传算法基因，顺序序列
+vector<double> utilization;          //种群利用率
+vector<double> fitness_value;        //适值
 
 void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outputs, int population_size)
 {
-    std::mt19937 g(rd());
+//    std::mt19937 g(rd());
 
     if(strcmp(resources_to_optimize, "CPU") != 0)
     {
@@ -53,20 +56,34 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
         {
             gene.push_back(j);
         }
-        shuffle(gene.begin(), gene.end(), g);
+        random_shuffle(gene.begin(), gene.end());
         population.push_back(gene);
+        gene.clear();
     }
 
-//    population_decoding();
-    vector<int> temp_cut_positon;
-    gene_deconding(population[0], temp_cut_positon);
+    value();
 
     int i = 0;
 }
 
-double population_decoding()
+void value()
 {
-    return 0;
+    //计算每一个的利用率
+    vector<int> temp_cut_positon;
+    for(auto it = population.begin(); it != population.end(); ++it)
+    {
+//        int i = static_cast<int>(distance(population.begin(), it));
+        temp_cut_positon.clear();
+        utilization.push_back(gene_deconding(*it, temp_cut_positon));
+    }
+
+    vector<double>::iterator min_utilization = min_element(utilization.begin(), utilization.end());
+    //计算适值
+    for(auto it_u = utilization.begin(); it_u != utilization.end(); ++it_u)
+    {
+        fitness_value.push_back(*it_u - *min_utilization + 0.01 * rand() / RAND_MAX);
+    }
+
 }
 
 //物理机数目就是cut_position.size()
@@ -89,8 +106,8 @@ double gene_deconding(vector<int> gene, vector<int> &cut_positon)
 
     if(strcmp(resources_to_optimize, "CPU") != 0)
     {
-        cut_positon.push_back(123);
-        return (resouces_needed)/((cut_positon.size()+1) * physical_machine.cpu);
+//        cut_positon.push_back(123);
+        return static_cast<double>(resouces_needed)/((cut_positon.size()+1) * physical_machine.cpu);
     }
     else if (strcmp(resources_to_optimize, "MEM") != 0)
     {
