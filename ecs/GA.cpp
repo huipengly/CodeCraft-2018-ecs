@@ -21,7 +21,8 @@ vector<vector<int>> children;           //子种群
 vector<double> utilization;             //种群利用率
 vector<double> fitness_value;           //适值
 vector<double> roulette;                //轮盘赌概率区间
-const int variation_rate = 1;        //变异率
+const int variation_rate = 1;           //变异率
+const int max_generations = 10;         //进化代数
 
 void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outputs, int population_size)
 {
@@ -64,21 +65,38 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
         temp_gene.clear();
     }
 
-    //计算各个基因适值
     value();
+    for(int i = 0; i < max_generations; ++i)
+    {
+        //计算各个基因适值
 
-    //轮盘赌
-    roulette_build();
-    cout << roulette_choose() << endl;
+//    //轮盘赌
+//    roulette_build();
+//    cout << roulette_choose() << endl;
 
-    //交叉
-    order_crossover(1, 2, children);
+        //交叉
+        for (int i = 0; i < population_size / 2; i++)
+        {
+            order_crossover(roulette_choose(), roulette_choose(), children);
+        }
 
-    //变异
-    children = population;
-    variation();
+        //变异
+//    children = population;
+        variation();
 
-    int i = 0;
+        //子代取代父代
+        population = children;
+        children.clear();
+
+        //计算新子代适值
+        value();
+    }
+
+    //TODO:保留历史最优，最优保留遗传
+    //从最后一代中选择输出
+//    utilization.ma
+
+//    int i = 0;
 }
 
 void value()
@@ -173,70 +191,84 @@ void order_crossover(int parents1, int parents2, vector<vector<int>> children)
     swap_ranges(it1 + crossover_start, it1 + crossover_end, it2 + crossover_start);
 
     //临时基因变量，存储的是从变异尾端到基因尾端再加上一段完整的父代基因，用来顺序加入新基因
+    //填入剩余序列
+    //子代1
     vector<int> temp_gene11;
     copy(population[parents1].begin() + crossover_end, population[parents1].end(), back_inserter(temp_gene11));
     copy(population[parents1].begin(), population[parents1].end(), back_inserter(temp_gene11));
     auto it_temp_gene = temp_gene11.begin();
-    //填入剩余序列
+    vector<int> temp_crossover_part;
+    copy(child1.begin() + crossover_start, child1.begin() + crossover_end, back_inserter(temp_crossover_part));
+    sort(temp_crossover_part.begin(), temp_crossover_part.end());
     for(auto it = (child1.begin() + crossover_end); it != child1.end(); ++it)
     {
-        int diss = distance(it, child1.end());
-//        auto isEven = [](int i){int aba = *it_temp_gene;return i == aba;};
-        //FIXME:any_of调用bug
-//        auto itt = population[parents1].begin();
-//        auto ittt = population[parents1].end();
+//        int diss = distance(it, child1.end());
         while(true)
         {
-            bool aaaa = binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene);
-            if(!aaaa)
+//            bool aaaa = binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene);
+            //binary_search函数需要排序才能搜索
+            if(!binary_search(temp_crossover_part.begin(), temp_crossover_part.end(), *it_temp_gene))
             {
                 break;
             }
             ++it_temp_gene;
         }
-//        int a = 1;
-//        while(any_of(population[parents1][crossover_start], population[parents1][crossover_end], [](int i){ return i == aba; }));
-//        --it_temp_gene;
         *it = *it_temp_gene;
         ++it_temp_gene;
-
-
     }
     for(auto it = child1.begin(); it != (child1.begin() + crossover_start); ++it)
     {
-        int diss = distance(it, child1.end());
-//        auto isEven = [](int i){int aba = *it_temp_gene;return i == aba;};
-        //FIXME:any_of调用bug
-//        auto itt = population[parents1].begin();
-//        auto ittt = population[parents1].end();
+//        int diss = distance(it, child1.end());
         while(true)
         {
-            bool aaaa = binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene);
-            if(!aaaa)
+//            bool aaaa = binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene);
+            if(!binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene))
+            {
+                break;
+            }
+            ++it_temp_gene; //如果有跟交叉部分重复的，则继续向下找
+        }
+        *it = *it_temp_gene;
+        ++it_temp_gene;     //处理完一个，继续向下处理
+    }
+    //子代2
+     vector<int> temp_gene12;
+    copy(population[parents2].begin() + crossover_end, population[parents2].end(), back_inserter(temp_gene11));
+    copy(population[parents2].begin(), population[parents2].end(), back_inserter(temp_gene11));
+    it_temp_gene = temp_gene11.begin();
+    temp_crossover_part.clear();
+    copy(child2.begin() + crossover_start, child2.begin() + crossover_end, back_inserter(temp_crossover_part));
+    sort(temp_crossover_part.begin(), temp_crossover_part.end());
+    for(auto it = (child2.begin() + crossover_end); it != child2.end(); ++it)
+    {
+        while(true)
+        {
+            if(!binary_search(temp_crossover_part.begin(), temp_crossover_part.end(), *it_temp_gene))
             {
                 break;
             }
             ++it_temp_gene;
         }
-//        int a = 1;
-//        while(any_of(population[parents1][crossover_start], population[parents1][crossover_end], [](int i){ return i == aba; }));
-//        --it_temp_gene;
         *it = *it_temp_gene;
         ++it_temp_gene;
     }
-    int i = 0;
-//    for(auto it = (child2.begin() + crossover_end); it != child2.end(); ++it)
-//    {
-//        while(any_of(population[parents2][crossover_start], population[parents2][crossover_end], it_temp_gene++));
-//        --it_temp_gene;
-//        it = it_temp_gene;
-//    }
-//    for(auto it = child2.begin(); it != (child2.begin() + crossover_start); ++it)
-//    {
-//        while(any_of(population[parents2][crossover_start], population[parents2][crossover_end], it_temp_gene++));
-//        --it_temp_gene;
-//        it = it_temp_gene;
-//    }
+    for(auto it = child2.begin(); it != (child2.begin() + crossover_start); ++it)
+    {
+        while(true)
+        {
+            if(!binary_search(child2.begin() + crossover_start, child2.begin() + crossover_end, *it_temp_gene))
+            {
+                break;
+            }
+            ++it_temp_gene; //如果有跟交叉部分重复的，则继续向下找
+        }
+        *it = *it_temp_gene;
+        ++it_temp_gene;     //处理完一个，继续向下处理
+    }
+
+    //将交叉好的保存到子代
+    children.push_back(child1);
+    children.push_back(child2);
 }
 
 //变异点间倒序变异
