@@ -18,7 +18,7 @@ vector<int> flavors_to_place;   //把每个flavor的数目拆成需求序列，�
 vector<vector<int>> population; //种群基因
 vector<int> gene;               //遗传算法基因，顺序序列
 
-void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> outputs, int population_size)
+void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outputs, int population_size)
 {
     std::mt19937 g(rd());
 
