@@ -99,11 +99,56 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
     int temp_dis = distance(utilization.begin(), result);
 //    utilization.ma
 
-    int i = 0;
+    //输出
+    vector<int> temp_use(16,0);
+    vector<int> temp_cut_positon_for_outputs;
+    gene_deconding(population[temp_dis], temp_cut_positon_for_outputs);
+    int outputs_counter = 0;
+    for(auto it = temp_cut_positon_for_outputs.begin(); it != temp_cut_positon_for_outputs.end(); ++it)
+    {
+        vector<int> temp_outputs;
+        if(it == temp_cut_positon_for_outputs.begin())//0到第一个切点
+        {
+            copy(population[temp_dis].begin(), population[temp_dis].begin() + *it, back_inserter(temp_outputs));
+            outputs.push_back(temp_use);
+            for (int &temp_output : temp_outputs)
+            {
+                outputs[outputs_counter][flavors_to_place[temp_output]] += 1;
+            }
+            outputs_counter++;
+        }
+        else
+        {
+            copy(population[temp_dis].begin() + *(it - 1), population[temp_dis].begin() + *it, back_inserter(temp_outputs));
+            outputs.push_back(temp_use);
+            for (int &temp_output : temp_outputs)
+            {
+                outputs[outputs_counter][flavors_to_place[temp_output]] += 1;
+            }
+            outputs_counter++;
+        }
+
+        if(it == temp_cut_positon_for_outputs.end() - 1)//最后一个切点到末尾
+        {
+            vector<int> temp_use2(16,0);
+            temp_outputs.clear();
+//            temp_use.clear();
+            copy(population[temp_dis].begin() + *it, population[temp_dis].end(), back_inserter(temp_outputs));
+            outputs.push_back(temp_use2);
+            for (int &temp_output : temp_outputs)
+            {
+                outputs[outputs_counter][flavors_to_place[temp_output]] += 1;
+            }
+            outputs_counter++;
+        }
+    }
+
+//    int i = 0;
 }
 
 void value()
 {
+    utilization.clear();
     //计算每一个的利用率
     vector<int> temp_cut_positon;
     for(auto it = population.begin(); it != population.end(); ++it)

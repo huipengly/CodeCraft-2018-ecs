@@ -49,64 +49,107 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
     {
         if(flavor_type_to_predict[flavor])
         {
-   //double mydata[58] = {0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,2,0,2,0,0,0,0,0,0,2,0,0,0,0,3,0,10,0};    //flavor2数据
-   double *mydata = train[flavor];
-   int mydata_num = train_day;
+           //double mydata[58] = {0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,2,0,2,0,0,0,0,0,0,2,0,0,0,0,3,0,10,0};    //flavor2数据
+           double *mydata = train[flavor];
+           int mydata_num = train_day;
 
-   //最小二乘拟合
-   //inv(H_inv*H)*H'*(temp);
-   int fun_num = MAX_FUNCTION_NUM;       //函数阶数
-   while(fun_num > 0)
-   {
-       double *H = new double[(mydata_num - fun_num) * fun_num]();
-       double *H_trans = new double[fun_num * (mydata_num - fun_num)]();
-       double *HH = new double[fun_num * fun_num]();
-       double *HH_inv = new double[fun_num * fun_num]();
-       double *res1 = new double[fun_num * (mydata_num - fun_num)]();
-       //    double *parameter = new double[fun_num]();
-       double parameter[MAX_FUNCTION_NUM] = {0};
+           //最小二乘拟合
+           //inv(H_inv*H)*H'*(temp);
+           int fun_num = MAX_FUNCTION_NUM;       //函数阶数
+           while(fun_num > 0)
+           {
+               double *H = new double[(mydata_num - fun_num) * fun_num]();
+               double *H_trans = new double[fun_num * (mydata_num - fun_num)]();
+               double *HH = new double[fun_num * fun_num]();
+               double *HH_inv = new double[fun_num * fun_num]();
+               double *res1 = new double[fun_num * (mydata_num - fun_num)]();
+               //    double *parameter = new double[fun_num]();
+               double parameter[MAX_FUNCTION_NUM] = {0};
 
-       for (int i = 0; i < mydata_num - fun_num; i++)
-       {
-  for (int j = 0; j < fun_num; j++)
-  {
-      H[i * fun_num + j] = mydata[i + fun_num - j - 1];
-  }
-       }
+               for (int i = 0; i < mydata_num - fun_num; i++)
+               {
+                  for (int j = 0; j < fun_num; j++)
+                  {
+                      H[i * fun_num + j] = mydata[i + fun_num - j - 1];
+                  }
+               }
 
-       matrix_trans(H, mydata_num - fun_num, fun_num, H_trans);
-       matrix_mul(H_trans, fun_num, mydata_num - fun_num, H, mydata_num - fun_num, fun_num, HH);
-       if (!Gauss(HH, HH_inv, fun_num))
-       {
-  //无法求逆就减小阶数
-  fun_num--;
+               matrix_trans(H, mydata_num - fun_num, fun_num, H_trans);
+               matrix_mul(H_trans, fun_num, mydata_num - fun_num, H, mydata_num - fun_num, fun_num, HH);
+               if (!Gauss(HH, HH_inv, fun_num))
+               {
+                    //无法求逆就减小阶数
+                    fun_num--;
 #ifdef _DEBUG
-  cout << "Gauss fault!" << endl;
+                    cout << "Gauss fault!" << endl;
 #endif
-  continue;
-       };
-       matrix_mul(HH_inv, fun_num, fun_num, H_trans, fun_num, mydata_num - fun_num, res1);
-       matrix_mul(res1, fun_num, mydata_num - fun_num, mydata + fun_num, mydata_num - fun_num, 1, parameter);
+                    continue;
+               };
+               matrix_mul(HH_inv, fun_num, fun_num, H_trans, fun_num, mydata_num - fun_num, res1);
+               matrix_mul(res1, fun_num, mydata_num - fun_num, mydata + fun_num, mydata_num - fun_num, 1, parameter);
 
-       //预测
-       double mydata_last_fun_num[MAX_FUNCTION_NUM] = {0};//最后fun_num个数据，反向存储
-       for (int i = 0; i < predict_day; i++)
-       {
-          reverse_copy(&mydata[mydata_num - fun_num], &mydata[mydata_num], mydata_last_fun_num);
-          matrix_mul(mydata_last_fun_num, 1, fun_num, parameter, fun_num, 1, &mydata[mydata_num]);
-          vec_predict_demand[flavor] += static_cast<int>(round(mydata[mydata_num]));
-          mydata_num++;
-       }
-       break;//可以求逆就输出结果
-   }
+               //预测
+               double mydata_last_fun_num[MAX_FUNCTION_NUM] = {0};//最后fun_num个数据，反向存储
+               for (int i = 0; i < predict_day; i++)
+               {
+                  reverse_copy(&mydata[mydata_num - fun_num], &mydata[mydata_num], mydata_last_fun_num);
+                  matrix_mul(mydata_last_fun_num, 1, fun_num, parameter, fun_num, 1, &mydata[mydata_num]);
+                  vec_predict_demand[flavor] += static_cast<int>(round(mydata[mydata_num]));
+                  mydata_num++;
+               }
+               break;//可以求逆就输出结果
+           }
         }
     }
 
+    //ga分配
     vector<vector<int>> vec_outputs;
     genetic_algorithm(vec_predict_demand, vec_outputs, 50);
 
+    int ps_num(0);
+
+    for(int i = 0; i < vec_outputs.size(); ++i)
+    {
+        ps_num += vec_outputs[i].size();
+    }
+
+    //输出
+    char result_file[100000] = "";
+    char str_tmp[100] = "";
+    sprintf(str_tmp,"%d\n",ps_num);
+    strcat(result_file,str_tmp);
+    for(int i = 0; i < 16; i ++)
+    {
+        if(flavor_type_to_predict[i])
+        {
+            sprintf(str_tmp, "flavor%d %d\n", i, vec_predict_demand[i]);
+            strcat(result_file, str_tmp);
+        }
+    }
+    strcat(result_file,"\n");
+    sprintf(str_tmp, "%d\n", static_cast<int>(vec_outputs.size()));
+    strcat(result_file,str_tmp);
+    for(int i = 0; i < vec_outputs.size(); i ++)
+    {
+        sprintf(str_tmp,"%d",i + 1);
+        strcat(result_file,str_tmp);
+//        for(auto it = vec_outputs[i].begin(); it != vec_outputs[i].end(); ++it)
+        for(int j = 0; j < vec_outputs[i].size(); ++j)
+        {
+            if(flavor_type_to_predict[j])
+            {
+                if(vec_outputs[i][j] != 0)
+                {
+                    sprintf(str_tmp, " flavor%d %d", j, vec_outputs[i][j]);
+                    strcat(result_file, str_tmp);
+                }
+            }
+        }
+        strcat(result_file,"\n");
+    }
+
 	// 需要输出的内容
-	char * result_file = (char *)"5\nflavor1 1\nflavor2 1\nflavor3 1\nflavor4 2\nflavor5 2\n\n1 flavor1 1 flavor2 1 flavor3 1 flavor4 2 flavor5 2";
+//	char * result_file = (char *)"5\nflavor1 1\nflavor2 1\nflavor3 1\nflavor4 2\nflavor5 2\n\n1 flavor1 1 flavor2 1 flavor3 1 flavor4 2 flavor5 2";
 
 	// 直接调用输出文件的方法输出到指定文件中(ps请注意格式的正确性，如果有解，第一行只有一个数据；第二行为空；第三行开始才是具体的数据，数据之间用一个空格分隔开)
 	write_result(result_file, filename);
