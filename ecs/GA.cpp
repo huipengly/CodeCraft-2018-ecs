@@ -104,42 +104,55 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
     vector<int> temp_cut_positon_for_outputs;
     gene_deconding(population[temp_dis], temp_cut_positon_for_outputs);
     int outputs_counter = 0;
-    for(auto it = temp_cut_positon_for_outputs.begin(); it != temp_cut_positon_for_outputs.end(); ++it)
+    if(temp_cut_positon_for_outputs.empty())
     {
         vector<int> temp_outputs;
-        if(it == temp_cut_positon_for_outputs.begin())//0到第一个切点
+        copy(population[temp_dis].begin(), population[temp_dis].end(), back_inserter(temp_outputs));
+        outputs.push_back(temp_use);
+        for (int &temp_output : temp_outputs)
         {
-            copy(population[temp_dis].begin(), population[temp_dis].begin() + *it, back_inserter(temp_outputs));
-            outputs.push_back(temp_use);
-            for (int &temp_output : temp_outputs)
-            {
-                outputs[outputs_counter][flavors_to_place[temp_output]] += 1;
-            }
-            outputs_counter++;
+            outputs[outputs_counter][flavors_to_place[temp_output]] += 1;
         }
-        else
+    }
+    else
+    {
+        for(auto it = temp_cut_positon_for_outputs.begin(); it != temp_cut_positon_for_outputs.end(); ++it)
         {
-            copy(population[temp_dis].begin() + *(it - 1), population[temp_dis].begin() + *it, back_inserter(temp_outputs));
-            outputs.push_back(temp_use);
-            for (int &temp_output : temp_outputs)
+            vector<int> temp_outputs;
+            if (it == temp_cut_positon_for_outputs.begin())//0到第一个切点
             {
-                outputs[outputs_counter][flavors_to_place[temp_output]] += 1;
+                copy(population[temp_dis].begin(), population[temp_dis].begin() + *it, back_inserter(temp_outputs));
+                outputs.push_back(temp_use);
+                for (int &temp_output : temp_outputs)
+                {
+                    outputs[outputs_counter][flavors_to_place[temp_output]] += 1;
+                }
+                outputs_counter++;
+            } else
+            {
+                copy(population[temp_dis].begin() + *(it - 1), population[temp_dis].begin() + *it,
+                     back_inserter(temp_outputs));
+                outputs.push_back(temp_use);
+                for (int &temp_output : temp_outputs)
+                {
+                    outputs[outputs_counter][flavors_to_place[temp_output]] += 1;
+                }
+                outputs_counter++;
             }
-            outputs_counter++;
-        }
 
-        if(it == temp_cut_positon_for_outputs.end() - 1)//最后一个切点到末尾
-        {
-            vector<int> temp_use2(16,0);
-            temp_outputs.clear();
-//            temp_use.clear();
-            copy(population[temp_dis].begin() + *it, population[temp_dis].end(), back_inserter(temp_outputs));
-            outputs.push_back(temp_use2);
-            for (int &temp_output : temp_outputs)
+            if (it == temp_cut_positon_for_outputs.end() - 1)//最后一个切点到末尾
             {
-                outputs[outputs_counter][flavors_to_place[temp_output]] += 1;
+                vector<int> temp_use2(16, 0);
+                temp_outputs.clear();
+                //            temp_use.clear();
+                copy(population[temp_dis].begin() + *it, population[temp_dis].end(), back_inserter(temp_outputs));
+                outputs.push_back(temp_use2);
+                for (int &temp_output : temp_outputs)
+                {
+                    outputs[outputs_counter][flavors_to_place[temp_output]] += 1;
+                }
+                outputs_counter++;
             }
-            outputs_counter++;
         }
     }
 
@@ -179,7 +192,7 @@ double gene_deconding(vector<int> gene, vector<int> &cut_positon)
         if((cpu_sum > physical_machine.cpu) || (mem_sum > physical_machine.memory))
         {
             //如果超过物理机，则认为上一个就是切点。从上一个点重新计算切点
-            cut_positon.push_back(temp_distance - 1);
+            cut_positon.push_back(temp_distance);
             --it;
             cpu_sum = mem_sum = 0;
         }
