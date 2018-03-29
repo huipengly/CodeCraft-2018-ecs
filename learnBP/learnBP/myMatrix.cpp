@@ -1,0 +1,40 @@
+#include "myMatrix.h"
+
+vector<vector<double>> matrix_multiply(vector<vector<double>> arrA, vector<vector<double>> arrB)
+{
+	//矩阵arrA的行数  
+	int rowA = arrA.size();
+	//矩阵arrA的列数  
+	int colA = arrA[0].size();
+	//矩阵arrB的行数  
+	int rowB = arrB.size();
+	//矩阵arrB的列数  
+	int colB = arrB[0].size();
+	vector<vector<double>>  res;
+	if (colA != rowB)//如果矩阵arrA的列数不等于矩阵arrB的行数。则返回空  
+	{
+		return res;
+	}
+	else
+	{
+		//设置结果矩阵的大小，初始化为为0  
+		res.resize(rowA);
+		for (int i = 0; i < rowA; ++i)
+		{
+			res[i].resize(colB);
+		}
+
+		//矩阵相乘  
+		for (int i = 0; i < rowA; ++i)
+		{
+			for (int j = 0; j < colB; ++j)
+			{
+				for (int k = 0; k < colA; ++k)
+				{
+					res[i][j] += arrA[i][k] * arrB[k][j];
+				}
+			}
+		}
+	}
+	return res;
+}

@@ -116,9 +116,11 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="myMatrix.cpp" />
     <ClCompile Include="myBPNN.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="myMatrix.h" />
     <ClInclude Include="myBPNN.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

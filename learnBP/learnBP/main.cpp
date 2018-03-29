@@ -30,10 +30,10 @@ int main()
 	//std::mt19937 mt(rd());
 	//for (int n = 0; n < 10; n++)
 	//	std::cout << mt()/static_cast<double>(mt.max()) * 0.2 -0.1 << std::endl;
-	vector<int> laybels = { 2, 2, 1 };
-	myBPNN bp(laybels);
-	bp.train(y, x, 0.1, 1000);
-	vector<double> pre_y = bp.predict(x4);
-	cout << "pre_y : " << pre_y.front() << endl;
+	//vector<int> laybels = { 2, 2, 1 };
+	//myBPNN bp(laybels);
+	//bp.train(y, x, 0.1, 1000);
+	//vector<double> pre_y = bp.predict(x4);
+	//cout << "pre_y : " << pre_y.front() << endl;
 	return 0;
 }

@@ -21,9 +21,15 @@
     <ClCompile Include="myBPNN.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="myMatrix.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="myBPNN.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="myMatrix.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
