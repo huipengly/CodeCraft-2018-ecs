@@ -8,21 +8,25 @@ myBPNN::myBPNN(vector<int> layers)
 		this->layers.push_back(Layer(i, layers[i]));
 		nodeNumber += layers[i];
 	}
+	this->layers.back().nodes.pop_back();//最后输出的恒1节点去除
 	for (int i = 0; i < layerNumber - 1; ++i)
 	{
-		for (int j = 0; j < layers[i]; ++j)
+		connections.clear();
+		vector<Node>* nodes = &this->layers[i].nodes;
+		for (auto itNode = nodes->begin(); itNode != nodes->end(); ++itNode)
 		{
-			for (int k = 0; k < layers[i + 1]; ++k)
+			vector<Node>* nextLayerNodes = &this->layers[i + 1].nodes;
+			for (auto itNextNode = nextLayerNodes->begin(); itNextNode != nextLayerNodes->end(); ++itNextNode)
 			{
 				//添加连接两端的节点信息
-				connections.push_back(Connection(&this->layers[i].nodes[j], &this->layers[i + 1].nodes[k]));
+				connections.push_back(Connection(&(*itNode), &(*itNextNode)));
 			}
 		}
 		for (auto conn : connections)
 		{
 			//添加节点的连接信息
-			conn.downstreamNode->appendDownstreamConnection(&conn);
-			conn.upstreamNode->appendUpstreamConnection(&conn);
+			conn.downstreamNode->appendDownstreamConnection(conn);
+			conn.upstreamNode->appendUpstreamConnection(conn);
 		}
 	}
 }
@@ -36,7 +40,7 @@ void myBPNN::train(vector<vector<double>> labels, vector<vector<double>> dataset
 {
 	for (int i = 0; i < iteration; ++i)
 	{
-		for (int j = 0; j < dataset.size(); ++j)
+		for (size_t j = 0; j < dataset.size(); ++j)
 		{
 			trainOneSample(labels[j], dataset[j], rate);
 		}
@@ -74,9 +78,9 @@ void myBPNN::update_weight(double rate)
 	{
 		for (Node node : layer.nodes)
 		{
-			for (Connection *conn : node.downstream)
+			for (Connection conn : node.downstream)
 			{
-				conn->updateWeight(rate);
+				conn.updateWeight(rate);
 			}
 		}
 	}
@@ -90,7 +94,7 @@ void myBPNN::calculateGradient()
 		{
 			for (auto conn : node.downstream)
 			{
-				conn->calculateGradient();
+				conn.calculateGradient();
 			}
 		}
 	}
@@ -111,15 +115,15 @@ vector<double> myBPNN::predict(vector<double> sample)
 	*/
 	vector<double> pre;
 	layers[0].setOutput(sample);
-	for (Layer layer : layers)
+	for (auto itLayer = layers.begin() + 1; itLayer != layers.end(); ++itLayer)
 	{
-		layer.calculateOutput();//一层一层计算输出
+		itLayer->calculateOutput();//一层一层计算输出
 	}
-	for (auto it = layers.back().nodes.begin(); it != layers.back().nodes.end() - 1; ++it)
+	for (auto it = layers.back().nodes.begin(); it != layers.back().nodes.end(); ++it)
 	{
 		pre.push_back(it->getOutput());//记录输出层的值
 	}
-	return vector<double>();
+	return pre;
 }
 
 Node::Node(int layerIndex, int nodeIndex)
@@ -140,12 +144,12 @@ void Node::setOutput(double output)
 	this->output = output;
 }
 
-void Node::appendDownstreamConnection(Connection* connection)
+void Node::appendDownstreamConnection(Connection connection)
 {
 	downstream.push_back(connection);
 }
 
-void Node::appendUpstreamConnection(Connection* connection)
+void Node::appendUpstreamConnection(Connection connection)
 {
 	upstream.push_back(connection);
 }
@@ -155,8 +159,8 @@ void Node::calculateOutput()
 	double output_without_sigmoid = 0;
 	for (auto us : upstream)
 	{
-		auto upstreamNodeOutput = us->upstreamNode->getOutput();
-		auto upstreamWeight = us->getWeight();;
+		auto upstreamNodeOutput = us.upstreamNode->getOutput();
+		auto upstreamWeight = us.getWeight();;
 		output_without_sigmoid += upstreamNodeOutput * upstreamWeight;
 	}
 	output = Sigmoid(output_without_sigmoid);
@@ -167,8 +171,8 @@ void Node::calculateHiddenLayerDelta()
 	double downstream_delta = 0;
 	for (auto ds : downstream)
 	{
-		auto downstreamsNodeDelta = ds->upstreamNode->getOutput();
-		auto downstreamsWeight = ds->getWeight();
+		auto downstreamsNodeDelta = ds.upstreamNode->getOutput();
+		auto downstreamsWeight = ds.getWeight();
 		downstream_delta += downstreamsNodeDelta * downstreamsWeight;
 	}
 	delta = output * (1 - output) * downstream_delta;
@@ -196,9 +200,23 @@ double Node::getDelta()
 
 Connection::Connection(Node * upstreamNode, Node * downstreamNode)
 {
-	this->upstreamNode = upstreamNode;
-	this->downstreamNode = downstreamNode;
-	weight = rand() / RAND_MAX * 0.2 - 0.1;	//初始权重是一个很小的随机数
+	if (NULL != upstreamNode)
+	{
+		this->upstreamNode = upstreamNode;
+	}
+	else
+	{
+		this->upstreamNode = NULL;
+	}
+	if (NULL != downstreamNode)
+	{
+		this->downstreamNode = downstreamNode;
+	}
+	else
+	{
+		this->downstreamNode = NULL;
+	}
+	weight = 1.0 * rand() / RAND_MAX * 0.2 - 0.1;	//初始权重是一个很小的随机数
 	gradient = 0;
 }
 
@@ -240,7 +258,7 @@ Layer::~Layer()
 
 void Layer::setOutput(vector<double> data)
 {
-	for (int i = 0; i < data.size(); ++i)
+	for (size_t i = 0; i < data.size(); ++i)
 	{
 		nodes[i].setOutput(data[i]);
 	}
@@ -248,7 +266,7 @@ void Layer::setOutput(vector<double> data)
 
 void Layer::calculateOutput()
 {
-	for (int i = 0; i < nodes.size() - 1; ++i)
+	for (size_t i = 0; i < nodes.size() - 1; ++i)
 	{
 		nodes[i].calculateOutput();
 	}
