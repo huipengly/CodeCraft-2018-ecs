@@ -160,7 +160,7 @@ void Node::calculateOutput()
 	for (auto us : upstream)
 	{
 		auto upstreamNodeOutput = us.upstreamNode->getOutput();
-		auto upstreamWeight = us.getWeight();;
+		auto upstreamWeight = us.getWeight();
 		output_without_sigmoid += upstreamNodeOutput * upstreamWeight;
 	}
 	output = Sigmoid(output_without_sigmoid);
