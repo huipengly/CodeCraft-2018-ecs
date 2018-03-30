@@ -18,21 +18,45 @@ FullConnectionLayer::FullConnectionLayer(int inputSize, int outputSize)
 	output.resize(this->outputSize);
 }
 
-void FullConnectionLayer::forward(vector<vector<double>> intputArray)
+void FullConnectionLayer::forward(vector<double> intputArray)
 {
 	input = intputArray;
+	inputMatrix.push_back(input);
 	
-	vector<vector<double>> tempOutputMatrix;//函数输出是一个二维矩阵，实际输出只是一个向量，用临时变量转换一下
-	tempOutputMatrix = matrix_multiply(W, input);
-	output = tempOutputMatrix.front();
-	for (auto itOutput = output.begin(), itB = b.begin(); itOutput != output.end(); ++itOutput, ++itB)
-	{
-		*itOutput += *itB;
-	}
+	vector<vector<double>> W_inputT;//函数输出是一个二维矩阵，实际输出只是一个向量，用临时变量转换一下
+	W_inputT = matrixMultiply(W, matrixTranspose(inputMatrix));
+	output = vectorAdd(W_inputT.front(), b);
 }
 
-void FullConnectionLayer::backward(vector<double> deltaArray)
+void FullConnectionLayer::backward(vector<double> deltaArray)//计算除了输出层的
 {
-	//delta = 
+	vector<vector<double>> deltaArrayMatrix;
+	deltaArrayMatrix.push_back(deltaArray);
+	vector<vector<double>> tempDSigmiodInput(1);
+	for (auto itInput = input.begin(); itInput != input.end(); ++itInput)
+	{
+		tempDSigmiodInput[0].push_back(dSigmoid(*itInput));
+	}
+	auto W_T = matrixTranspose(W);
+	auto Ds_W_T = matrixMultiply(tempDSigmiodInput, W_T);
+	auto deltaMatrix = matrixMultiply(Ds_W_T, deltaArrayMatrix);//输出为1*n的矩阵，提取为向量
+	delta = deltaMatrix.front();
+	W_grad = matrixMultiply(deltaArrayMatrix, inputMatrix).front();
+	b_grad = deltaArray;
 }
 
+void FullConnectionLayer::update(double learnRate)
+{
+	W = matrixAdd(W, matrixMultiply(learnRate, W_grad));
+	b = vectorAdd(b, matrixMultiply(learnRate, b_grad));
+}
+
+double sigmoid(double x)
+{
+	return 1.0 / (1.0 + exp(-x));
+}
+
+double dSigmoid(double y)
+{
+	return y * (1.0 - y);
+}
