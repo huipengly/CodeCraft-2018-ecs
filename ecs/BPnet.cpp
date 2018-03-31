@@ -185,13 +185,14 @@ void BpNet::training(vector<sample> sampleGroup, double threshold)
 	int sampleNum = sampleGroup.size();
 	int count = 0;
 
-	while (error > threshold)
+//	while (error > threshold)
+	while (count < 5)
 		//for (int curTrainingTime = 0; curTrainingTime < trainingTime; curTrainingTime++)
 	{
-//		if((fabs(error - preError) < threshold))
-//		{
-//			count++;
-//		}
+		if((fabs(error - preError) < threshold))
+		{
+			count++;
+		}
 		preError = error;
 		cout << "training error: " << error << endl;
 		error = 0.f;
