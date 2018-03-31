@@ -71,7 +71,7 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
                 }
                 sampleGroup[i].out.push_back(myDataTrans[i + lookback]);
             }
-            testNet.training(sampleGroup, 0.001);
+            testNet.training(sampleGroup, 0.0001);
 
             vector<sample> testGroupp[7];
             for (int i = 0; i < predict_day; ++i)
