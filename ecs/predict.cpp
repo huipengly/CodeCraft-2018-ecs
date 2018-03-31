@@ -7,6 +7,7 @@
 #include <vector>
 #include <algorithm>
 #include "BPnet.h"
+#include "myMinMaxScaler.h"
 
 using namespace std;
 
@@ -36,11 +37,14 @@ int train_day = 0;   //训练持续时间
 vector<vector<FlavorDemand>> predict_demand(MAX_INFO_NUM);
 double predict[MAX_INFO_NUM][MAX_DATA_NUM] = {0};
 vector<int> vec_predict_demand(16, 0);
+vector<double> vec_predict_demand_double(16, 0);
 
 
 //你要完成的功能总入口
 void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int data_num, char * filename)
 {
+    myMinMaxScaler MinMaxScaler;
+
     srand(time(0));
 
     readInfo(info);
@@ -49,11 +53,13 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
 
     for(int flavor = 1; flavor < 16; flavor++)
     {
-        BpNet testNet;
         if(flavor_type_to_predict[flavor])
         {
+            BpNet testNet;
             double *mydata = train[flavor];
             int mydata_num = train_day;
+
+            vector<double> myDataTrans = MinMaxScaler.fitTransform(mydata, mydata_num);
 
             vector<sample> sampleGroup;
             sampleGroup.resize(mydata_num - lookback);
@@ -61,9 +67,9 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
             {
                 for (int j = 0; j < lookback; ++j)
                 {
-                    sampleGroup[i].in.push_back(mydata[i + j]);
+                    sampleGroup[i].in.push_back(myDataTrans[i + j]);
                 }
-                sampleGroup[i].out.push_back(mydata[i + lookback]);
+                sampleGroup[i].out.push_back(myDataTrans[i + lookback]);
             }
             testNet.training(sampleGroup, 0.001);
 
@@ -72,15 +78,15 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
             {
                 testGroupp[i].resize(1);
             }
-            testGroupp[0].front().in.push_back(mydata[mydata_num - lookback + 1]);
-            testGroupp[0].front().in.push_back(mydata[mydata_num - lookback + 2]);
-            testGroupp[0].front().in.push_back(mydata[mydata_num - lookback + 3]);
+            testGroupp[0].front().in.push_back(myDataTrans[mydata_num - lookback + 1]);
+            testGroupp[0].front().in.push_back(myDataTrans[mydata_num - lookback + 2]);
+            testGroupp[0].front().in.push_back(myDataTrans[mydata_num - lookback + 3]);
             testNet.predict(testGroupp[0]);
-            testGroupp[1].front().in.push_back(mydata[mydata_num - lookback + 2]);
-            testGroupp[1].front().in.push_back(mydata[mydata_num - lookback + 3]);
+            testGroupp[1].front().in.push_back(myDataTrans[mydata_num - lookback + 2]);
+            testGroupp[1].front().in.push_back(myDataTrans[mydata_num - lookback + 3]);
             testGroupp[1].front().in.push_back(testGroupp[0].front().out.front());
             testNet.predict(testGroupp[1]);
-            testGroupp[2].front().in.push_back(mydata[mydata_num - lookback + 3]);
+            testGroupp[2].front().in.push_back(myDataTrans[mydata_num - lookback + 3]);
             testGroupp[2].front().in.push_back(testGroupp[0].front().out.front());
             testGroupp[2].front().in.push_back(testGroupp[1].front().out.front());
             for (int i = 2; i < predict_day - 1; ++i)
@@ -93,8 +99,11 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
             testNet.predict(testGroupp[predict_day - 1]);
             for(auto tg :testGroupp)
             {
-                vec_predict_demand[flavor] += tg.front().out.front();
+                vec_predict_demand_double[flavor] += tg.front().out.front();
             }
+
+            vec_predict_demand_double[flavor] = MinMaxScaler.inverse_transform(vec_predict_demand_double[flavor]);//恢复原始大小
+            vec_predict_demand[flavor] = static_cast<int>(ceil(vec_predict_demand_double[flavor] + 0.5));//取整
         }
     }
 
