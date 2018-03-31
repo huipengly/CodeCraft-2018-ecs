@@ -6,6 +6,7 @@
 #include "cstring"
 #include <vector>
 #include <algorithm>
+#include "BPnet.h"
 
 using namespace std;
 
@@ -22,6 +23,7 @@ int predict_day = 0; //预测时间范围
 struct tm predict_start_time = {0};    //预测开始时间
 struct tm predict_end_time = {0};    //预测结束时间
 int info_status = 0;
+int lookback = 3;
 
 //flavor训练信息
 vector<vector<FlavorDemand>> history_demand(MAX_INFO_NUM);
@@ -47,58 +49,52 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
 
     for(int flavor = 1; flavor < 16; flavor++)
     {
+        BpNet testNet;
         if(flavor_type_to_predict[flavor])
         {
-           //double mydata[58] = {0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,1,0,1,0,0,0,0,0,2,0,2,0,0,0,0,0,0,2,0,0,0,0,3,0,10,0};    //flavor2数据
-           double *mydata = train[flavor];
-           int mydata_num = train_day;
+            double *mydata = train[flavor];
+            int mydata_num = train_day;
 
-           //最小二乘拟合
-           //inv(H_inv*H)*H'*(temp);
-           int fun_num = MAX_FUNCTION_NUM;       //函数阶数
-           while(fun_num > 0)
-           {
-               double *H = new double[(mydata_num - fun_num) * fun_num]();
-               double *H_trans = new double[fun_num * (mydata_num - fun_num)]();
-               double *HH = new double[fun_num * fun_num]();
-               double *HH_inv = new double[fun_num * fun_num]();
-               double *res1 = new double[fun_num * (mydata_num - fun_num)]();
-               //    double *parameter = new double[fun_num]();
-               double parameter[MAX_FUNCTION_NUM] = {0};
+            vector<sample> sampleGroup;
+            sampleGroup.resize(mydata_num - lookback);
+            for (int i = 0; i < mydata_num - lookback; i++)
+            {
+                for (int j = 0; j < lookback; ++j)
+                {
+                    sampleGroup[i].in.push_back(mydata[i + j]);
+                }
+                sampleGroup[i].out.push_back(mydata[i + lookback]);
+            }
+            testNet.training(sampleGroup, 0.001);
 
-               for (int i = 0; i < mydata_num - fun_num; i++)
-               {
-                  for (int j = 0; j < fun_num; j++)
-                  {
-                      H[i * fun_num + j] = mydata[i + fun_num - j - 1];
-                  }
-               }
-
-               matrix_trans(H, mydata_num - fun_num, fun_num, H_trans);
-               matrix_mul(H_trans, fun_num, mydata_num - fun_num, H, mydata_num - fun_num, fun_num, HH);
-               if (!Gauss(HH, HH_inv, fun_num))
-               {
-                    //无法求逆就减小阶数
-                    fun_num--;
-#ifdef _DEBUG
-                    cout << "Gauss fault!" << endl;
-#endif
-                    continue;
-               };
-               matrix_mul(HH_inv, fun_num, fun_num, H_trans, fun_num, mydata_num - fun_num, res1);
-               matrix_mul(res1, fun_num, mydata_num - fun_num, mydata + fun_num, mydata_num - fun_num, 1, parameter);
-
-               //预测
-               double mydata_last_fun_num[MAX_FUNCTION_NUM] = {0};//最后fun_num个数据，反向存储
-               for (int i = 0; i < predict_day; i++)
-               {
-                  reverse_copy(&mydata[mydata_num - fun_num], &mydata[mydata_num], mydata_last_fun_num);
-                  matrix_mul(mydata_last_fun_num, 1, fun_num, parameter, fun_num, 1, &mydata[mydata_num]);
-                  vec_predict_demand[flavor] += static_cast<int>(round(mydata[mydata_num]));
-                  mydata_num++;
-               }
-               break;//可以求逆就输出结果
-           }
+            vector<sample> testGroupp[7];
+            for (int i = 0; i < predict_day; ++i)
+            {
+                testGroupp[i].resize(1);
+            }
+            testGroupp[0].front().in.push_back(mydata[mydata_num - lookback + 1]);
+            testGroupp[0].front().in.push_back(mydata[mydata_num - lookback + 2]);
+            testGroupp[0].front().in.push_back(mydata[mydata_num - lookback + 3]);
+            testNet.predict(testGroupp[0]);
+            testGroupp[1].front().in.push_back(mydata[mydata_num - lookback + 2]);
+            testGroupp[1].front().in.push_back(mydata[mydata_num - lookback + 3]);
+            testGroupp[1].front().in.push_back(testGroupp[0].front().out.front());
+            testNet.predict(testGroupp[1]);
+            testGroupp[2].front().in.push_back(mydata[mydata_num - lookback + 3]);
+            testGroupp[2].front().in.push_back(testGroupp[0].front().out.front());
+            testGroupp[2].front().in.push_back(testGroupp[1].front().out.front());
+            for (int i = 2; i < predict_day - 1; ++i)
+            {
+                testNet.predict(testGroupp[i]);
+                testGroupp[i + 1].front().in.push_back(testGroupp[i-2].front().out.front());
+                testGroupp[i + 1].front().in.push_back(testGroupp[i-1].front().out.front());
+                testGroupp[i + 1].front().in.push_back(testGroupp[i].front().out.front());
+            }
+            testNet.predict(testGroupp[predict_day - 1]);
+            for(auto tg :testGroupp)
+            {
+                vec_predict_demand[flavor] += tg.front().out.front();
+            }
         }
     }
 
@@ -108,9 +104,9 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
 
     int flavor_num(0);
 
-    for(int i = 0; i < vec_outputs.size(); ++i)
+    for(size_t i = 0; i < vec_outputs.size(); ++i)
     {
-        for(int j = 0; j < vec_outputs[i].size(); ++j)
+        for(size_t j = 0; j < vec_outputs[i].size(); ++j)
         {
             flavor_num += vec_outputs[i][j];
         }
@@ -132,12 +128,12 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
     strcat(result_file,"\n");
     sprintf(str_tmp, "%d\n", static_cast<int>(vec_outputs.size()));
     strcat(result_file,str_tmp);
-    for(int i = 0; i < vec_outputs.size(); i ++)
+    for(size_t i = 0; i < vec_outputs.size(); i ++)
     {
         sprintf(str_tmp,"%d",i + 1);
         strcat(result_file,str_tmp);
 //        for(auto it = vec_outputs[i].begin(); it != vec_outputs[i].end(); ++it)
-        for(int j = 0; j < vec_outputs[i].size(); ++j)
+        for(size_t j = 0; j < vec_outputs[i].size(); ++j)
         {
             if(flavor_type_to_predict[j])
             {

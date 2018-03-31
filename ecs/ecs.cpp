@@ -3,6 +3,7 @@
 #include "lib_time.h"
 #include "cstdio"
 
+//输入第一个是data，第二个是info，第三个output
 int main(int argc, char *argv[])
 {
     print_time("Begin");
