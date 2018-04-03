@@ -71,12 +71,13 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
         //计算各个基因适值
 
 //    //轮盘赌
-    roulette_build();
+        roulette_build();
 //    cout << roulette_choose() << endl;
 
         //交叉
         for (int i = 0; i < population_size / 2; i++)
         {
+            //FIXME:会报错
             order_crossover(roulette_choose(), roulette_choose(), children);
         }
 
@@ -90,6 +91,7 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
 
         //计算新子代适值
         value();
+        roulette.clear();
     }
 
     //TODO:保留历史最优，最优保留遗传
