@@ -71,7 +71,7 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
         //计算各个基因适值
 
 //    //轮盘赌
-//    roulette_build();
+    roulette_build();
 //    cout << roulette_choose() << endl;
 
         //交叉
