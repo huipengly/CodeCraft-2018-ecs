@@ -70,6 +70,14 @@ vector<double> LeastSquares(vector<double> data,int p){
 	
 	vector<vector<double> > a, tx,invx,tmp;
 	tx = t(x);
+//	for (auto row : tx)
+//	{
+//		for(auto col : row)
+//		{
+//			cout << col << " , ";
+//		}
+//		cout << endl;
+//	}
 	invx = inv(mulMat(tx, x));
 	a = mulMat(mulMat(invx,tx), y);
 	a = t(a);
@@ -300,7 +308,7 @@ double predict_fun(vector<double> &data,vector<double> &data_var,vector<double> 
 		int t2 = data_var.size();
 		for(int j=0;j<q;j++){
 			s -= b[j] * data_var[t2-j-1];
-		}		
+		}
 		data.push_back(s);
 	}
 	return data[k-1];

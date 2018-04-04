@@ -58,19 +58,17 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
         if(flavor_type_to_predict[flavor])
         {
             vector<double> ArmaData;
-            int p=1,q=8,pp=3;//一定注意p，q的取值是通过数据计算后，估计出来的。
+            int p=1,q=8,pp=9;//一定注意p，q的取值是通过数据计算后，估计出来的。
             //读入数据
             for(int i = 0; i < train_day; ++i){
                 ArmaData.push_back(train[flavor][i]);
             }
-            //计算p,q,通过图像显示，选择，p = 7， q = 20, pp = 38
-//	Calculate_pq(ArmaData);
 
             vector<double> ta = LeastSquares(ArmaData,pp);
-            cout<<"根据AR模型得到的参数ta个数:  "<<ta.size()<<endl;
-            for(int i=0;i<ta.size();i++){
-                cout<<"ta["<<i<<"] = "<<ta[i]<<endl;
-            }
+//            cout<<"根据AR模型得到的参数ta个数:  "<<ta.size()<<endl;
+//            for(int i=0;i<ta.size();i++){
+//                cout<<"ta["<<i<<"] = "<<ta[i]<<endl;
+//            }
 
             //残差
             vector<double> bias = getBiasSeries(ArmaData,ta,pp);
@@ -83,67 +81,27 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
 
             vector<double> a(ab.begin(),ab.begin()+p);
             vector<double> b(ab.begin()+p,ab.begin()+p+q);
-            cout<<"参数a个数:  "<<a.size()<<endl;
-            for(int i=0;i<a.size();i++){
-                cout<<"a["<<i<<"] = "<<a[i]<<endl;
-            }
-            cout<<"参数b个数:  "<<b.size()<<endl;
-            for(int i=0;i<b.size();i++){
-                cout<<"b["<<i<<"] = "<<b[i]<<endl;
-            }
+//            cout<<"参数a个数:  "<<a.size()<<endl;
+//            for(int i=0;i<a.size();i++){
+//                cout<<"a["<<i<<"] = "<<a[i]<<endl;
+//            }
+//            cout<<"参数b个数:  "<<b.size()<<endl;
+//            for(int i=0;i<b.size();i++){
+//                cout<<"b["<<i<<"] = "<<b[i]<<endl;
+//            }
 
-            calPQ_N(ArmaData,bias,a,b,p,q);
+//            calPQ_N(ArmaData,bias,a,b,p,q);
 
-            cout<<predict_fun(ArmaData,bias,a,b,p,q,47)<<endl;
-//            BpNet testNet;
-//            double *mydata = train[flavor];
-//            int mydata_num = train_day;
-//
-//            vector<double> myDataTrans = MinMaxScaler.fitTransform(mydata, mydata_num);
-//
-//            vector<sample> sampleGroup;
-//            sampleGroup.resize(mydata_num - lookback);
-//            for (int i = 0; i < mydata_num - lookback; i++)
-//            {
-//                for (int j = 0; j < lookback; ++j)
-//                {
-//                    sampleGroup[i].in.push_back(myDataTrans[i + j]);
-//                }
-//                sampleGroup[i].out.push_back(myDataTrans[i + lookback]);
-//            }
-//            testNet.training(sampleGroup, 0.0001);
-//
-//            vector<sample> testGroupp[7];
-//            for (int i = 0; i < predict_day; ++i)
-//            {
-//                testGroupp[i].resize(1);
-//            }
-//            testGroupp[0].front().in.push_back(myDataTrans[mydata_num - lookback + 1]);
-//            testGroupp[0].front().in.push_back(myDataTrans[mydata_num - lookback + 2]);
-//            testGroupp[0].front().in.push_back(myDataTrans[mydata_num - lookback + 3]);
-//            testNet.predict(testGroupp[0]);
-//            testGroupp[1].front().in.push_back(myDataTrans[mydata_num - lookback + 2]);
-//            testGroupp[1].front().in.push_back(myDataTrans[mydata_num - lookback + 3]);
-//            testGroupp[1].front().in.push_back(testGroupp[0].front().out.front());
-//            testNet.predict(testGroupp[1]);
-//            testGroupp[2].front().in.push_back(myDataTrans[mydata_num - lookback + 3]);
-//            testGroupp[2].front().in.push_back(testGroupp[0].front().out.front());
-//            testGroupp[2].front().in.push_back(testGroupp[1].front().out.front());
-//            for (int i = 2; i < predict_day - 1; ++i)
-//            {
-//                testNet.predict(testGroupp[i]);
-//                testGroupp[i + 1].front().in.push_back(testGroupp[i-2].front().out.front());
-//                testGroupp[i + 1].front().in.push_back(testGroupp[i-1].front().out.front());
-//                testGroupp[i + 1].front().in.push_back(testGroupp[i].front().out.front());
-//            }
-//            testNet.predict(testGroupp[predict_day - 1]);
-//            for(auto tg :testGroupp)
-//            {
-//                vec_predict_demand_double[flavor] += tg.front().out.front();
-//            }
-//
-//            vec_predict_demand_double[flavor] = MinMaxScaler.inverse_transform(vec_predict_demand_double[flavor]);//恢复原始大小
-//            vec_predict_demand[flavor] = static_cast<int>(ceil(vec_predict_demand_double[flavor] + 0.5));//取整
+//            cout << "!!!!!" << endl;
+//            cout<< "predict: " <<predict_fun(ArmaData,bias,a,b,p,q,train_day + 1)<<endl;
+            for(int i = 0; i < predict_day; ++i)
+            {
+                vec_predict_demand[flavor] += predict_fun(ArmaData,bias,a,b,p,q,train_day + 1 + i);
+            }
+            if(vec_predict_demand[flavor] < 0)
+            {
+                vec_predict_demand[flavor] = 0;
+            }
         }
     }
 

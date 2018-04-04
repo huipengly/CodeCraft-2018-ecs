@@ -12,7 +12,9 @@ double det(vector<vector<double> > x);
 vector<vector<double> > delMat(vector<vector<double> > x,int r,int c);
 vector<vector<double> > A(vector<vector<double> > x);
 vector<vector<double> > inv(vector<vector<double> > x);
+vector<vector<double> > old_inv(vector<vector<double> > x);
 vector<vector<double> > ConRows(vector<vector<double> > x, vector<vector<double> > y);
 vector<vector<double> > ConCols(vector<vector<double> > x, vector<vector<double> > y);
-void test_Mat();
+bool Gauss(double *A, double *B, int n);
+//void test_Mat();
 #endif //AR_ARMA_MODEL_MAT_H

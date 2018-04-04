@@ -1,5 +1,6 @@
 
 #include "mat.h"
+#include "matrix.h"
 /**
  * a = inv(t(x) _*_ x) _*_ t(x) _*_ Y
  * t(x) : 对x球转置
@@ -138,7 +139,7 @@ vector<vector<double> > A(vector<vector<double> > x){
 /**
  *矩阵的逆
  */
-vector<vector<double> > inv(vector<vector<double> > x){
+vector<vector<double> > old_inv(vector<vector<double> > x){
 	vector<vector<double> > res = A(x);
 	double dets = det(x);
 	for(int i=0;i<res.size();i++){
@@ -148,6 +149,117 @@ vector<vector<double> > inv(vector<vector<double> > x){
 	}
 	return res;
 }
+
+vector<vector<double> > inv(vector<vector<double> > x)
+{
+	int size = static_cast<int>(x.size());
+	auto *A = new double[size * size]();
+	auto *B = new double[size * size]();
+
+	for (int i = 0; i < size; ++i)
+	{
+		for(int j = 0; j < size; ++j)
+		{
+			A[i * size + j] = x[i][j];
+		}
+	}
+
+	Gauss(A, B, size);
+
+	vector<vector<double>> res;
+	res.resize(size);
+	for(int i = 0; i < size; ++i)
+	{
+		res[i].resize(size);
+	}
+
+	for (int i = 0; i < size; ++i)
+	{
+		for(int j = 0; j < size; ++j)
+		{
+			res[i][j] = B[i * size + j];
+		}
+	}
+
+	return res;
+}
+
+//bool Gauss(double *A, double *B, int n)
+//{
+//	int i, j, k;
+//	double max, temp;
+//	double t[90000];                //临时矩阵
+//	//将A矩阵存放在临时矩阵t[n][n]中
+//	for (i = 0; i < n; i++)
+//	{
+//		for (j = 0; j < n; j++)
+//		{
+//			t[i*n+j] = A[i*n+j];
+//		}
+//	}
+//	//初始化B矩阵为单位阵
+//	for (i = 0; i < n; i++)
+//	{
+//		for (j = 0; j < n; j++)
+//		{
+//			B[i*n+j] = (i == j) ? (float)1 : 0;
+//		}
+//	}
+//	for (i = 0; i < n; i++)
+//	{
+//		//寻找主元
+//		max = t[i*n+i];
+//		k = i;
+//		for (j = i + 1; j < n; j++)
+//		{
+//			if (fabs(t[j*n+i]) > fabs(max))
+//			{
+//				max = t[j*n+i];
+//				k = j;
+//			}
+//		}
+//		//如果主元所在行不是第i行，进行行交换
+//		if (k != i)
+//		{
+//			for (j = 0; j < n; j++)
+//			{
+//				temp = t[i*n+j];
+//				t[i*n+j] = t[k*n+j];
+//				t[k*n+j] = temp;
+//				//B伴随交换
+//				temp = B[i*n+j];
+//				B[i*n+j] = B[k*n+j];
+//				B[k*n+j] = temp;
+//			}
+//		}
+//		//判断主元是否为0, 若是, 则矩阵A不是满秩矩阵,不存在逆矩阵
+//		if (t[i*n+i] == 0)
+//		{
+//
+//			return false;
+//		}
+//		//消去A的第i列除去i行以外的各行元素
+//		temp = t[i*n+i];
+//		for (j = 0; j < n; j++)
+//		{
+//			t[i*n+j] = t[i*n+j] / temp;        //主对角线上的元素变为1
+//			B[i*n+j] = B[i*n+j] / temp;        //伴随计算
+//		}
+//		for (j = 0; j < n; j++)        //第0行->第n行
+//		{
+//			if (j != i)                //不是第i行
+//			{
+//				temp = t[j*n+i];
+//				for (k = 0; k < n; k++)        //第j行元素 - i行元素*j列i行元素
+//				{
+//					t[j*n+k] = t[j*n+k] - t[i*n+k] * temp;
+//					B[j*n+k] = B[j*n+k] - B[i*n+k] * temp;
+//				}
+//			}
+//		}
+//	}
+//	return true;
+//}
 
 
 /**
