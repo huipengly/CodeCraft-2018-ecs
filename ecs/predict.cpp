@@ -41,6 +41,7 @@ vector<int> vec_predict_demand(16, 0);
 vector<double> vec_predict_demand_double(16, 0);
 
 extern double xx[];
+int p=1,q=8,pp=9;//一定注意p，q的取值是通过数据计算后，估计出来的。
 
 //你要完成的功能总入口
 void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int data_num, char * filename)
@@ -58,13 +59,19 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
         if(flavor_type_to_predict[flavor])
         {
             vector<double> ArmaData;
-            int p=1,q=8,pp=9;//一定注意p，q的取值是通过数据计算后，估计出来的。
+//            int p=1,q=8,pp=9;//一定注意p，q的取值是通过数据计算后，估计出来的。
             //读入数据
             for(int i = 0; i < train_day; ++i){
                 ArmaData.push_back(train[flavor][i]);
             }
 
             vector<double> ta = LeastSquares(ArmaData,pp);
+            while(ta.empty())
+            {
+                --pp;
+                cout << "--pp" << endl;
+                ta = LeastSquares(ArmaData,pp);
+            }
 //            cout<<"根据AR模型得到的参数ta个数:  "<<ta.size()<<endl;
 //            for(int i=0;i<ta.size();i++){
 //                cout<<"ta["<<i<<"] = "<<ta[i]<<endl;

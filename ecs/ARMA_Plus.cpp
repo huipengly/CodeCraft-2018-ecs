@@ -79,6 +79,10 @@ vector<double> LeastSquares(vector<double> data,int p){
 //		cout << endl;
 //	}
 	invx = inv(mulMat(tx, x));
+	if (invx.empty())
+    {
+        return vector<double>();
+    }
 	a = mulMat(mulMat(invx,tx), y);
 	a = t(a);
 	return a[0];

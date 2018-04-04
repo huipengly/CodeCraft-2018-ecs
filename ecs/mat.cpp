@@ -164,7 +164,10 @@ vector<vector<double> > inv(vector<vector<double> > x)
 		}
 	}
 
-	Gauss(A, B, size);
+	if(!Gauss(A, B, size))
+    {
+        return vector<vector<double>>();
+    }
 
 	vector<vector<double>> res;
 	res.resize(size);
