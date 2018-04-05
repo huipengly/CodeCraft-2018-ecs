@@ -25,6 +25,21 @@ vector<double> roulette;                //轮盘赌概率区间
 const int variation_rate = 1;           //变异率
 const int max_generations = 10;         //进化代数
 
+void testPopulationOrder()
+{
+    for(auto it = population.begin(); it != population.end(); ++it)
+    {
+        set<int> popset(it->begin(), it->end());
+        for (int i = 0; i < it->size(); ++i)
+        {
+            if (popset.find(i) == popset.end())
+            {
+                cout << "population order error" << endl;
+            }
+        }
+    }
+}
+
 void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outputs, int population_size)
 {
 //    std::mt19937 g(rd());
@@ -55,16 +70,17 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
 
     //产生一个随机序列
     vector<int> temp_gene;
+    for (int j = 0; j < static_cast<int>(flavors_to_place.size()); j++)
+    {
+        temp_gene.push_back(j);
+    }
     for(int i = 0; i < population_size; ++i)
     {
-        for (int j = 0; j < static_cast<int>(flavors_to_place.size()); j++)
-        {
-            temp_gene.push_back(j);
-        }
         random_shuffle(temp_gene.begin(), temp_gene.end());
         population.push_back(temp_gene);
-        temp_gene.clear();
     }
+
+    testPopulationOrder();
 
     value();
     for(int i = 0; i < max_generations; ++i)
@@ -81,6 +97,9 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
             //FIXME:会报错
             order_crossover(roulette_choose(), roulette_choose(), children);
         }
+        roulette.clear();
+
+        testPopulationOrder();
 
         //变异
 //    children = population;
@@ -90,9 +109,11 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
         population = children;
         children.clear();
 
+        testPopulationOrder();
+
         //计算新子代适值
+        fitness_value.clear();
         value();
-        roulette.clear();
     }
 
     //TODO:保留历史最优，最优保留遗传
@@ -229,16 +250,22 @@ void roulette_build()
 int roulette_choose()
 {
     double rand_num = static_cast<double>(rand()) / RAND_MAX;
-    return static_cast<int>(distance(roulette.begin(), upper_bound(roulette.begin(), roulette.end(), rand_num)));
     //upper_bound返回指向第一个大于给定值的元素的迭代器
+    int num = static_cast<int>(distance(roulette.begin(), upper_bound(roulette.begin(), roulette.end(), rand_num)));
+    return num - 1;//返回第一个大于的，是在前一个到这个的区间里。
 }
 
 //顺序交叉
 void order_crossover(int parents1, int parents2, vector<vector<int>> &children)
 {
     vector<int> child1, child2;
+    if((parents1 >= population.size()) || (parents2 >= population.size()))
+    {
+        int a = 0;
+    }
     child1 = population[parents1];
     child2 = population[parents2];
+
 
     //交换变量为start开始到end前一个，最后一个量不进行交换
     int crossover_start = static_cast<int>(floor(1.0 * population[parents1].size() * rand() / RAND_MAX));
@@ -277,12 +304,34 @@ void order_crossover(int parents1, int parents2, vector<vector<int>> &children)
                 --i;//没有成功写入新的值，不移动当前片段指向
             }
             ++j;//验证一个历史基因，向后走一个
+            if(j > child1.size())
+            {
+                cout << "error : ox j out of range" << endl;
+            }
+        }
+    }
+
+    vector<int> childTest;
+    for(int i = 0; i < child1.size(); ++i)
+    {
+        childTest.push_back(i);
+    }
+    set<int> child1set(childTest.begin(), childTest.end());
+    for(int i = 0; i < child1.size(); ++i)
+    {
+        if(child1set.find(i) == child1set.end())
+        {
+            cout << "ox error" << endl;
         }
     }
 
     //i是用来在当前段操作，j在历史基因上搜索
-    for(int i = 0, j = 0; i < child1.size(); ++i)
+    for(int i = 0, j = 0; i < child2.size(); ++i)
     {
+        if(j > population[parents2].size())
+        {
+            int b = 0;
+        }
         if ((i >= crossover_start) && (i < crossover_end))
         {
             //交换段不处理
@@ -291,16 +340,24 @@ void order_crossover(int parents1, int parents2, vector<vector<int>> &children)
         else
         {
             //find()  ，返回给定值值得定位器，如果没找到则返回end()。
-            if(swapPiece2.find(population[parents1][j]) == swapPiece2.end())
+            if(swapPiece1.find(population[parents2][j]) == swapPiece1.end())
             {
                 //没有在交换段则赋值
-                child1[i] = population[parents1][j];
+                child2[i] = population[parents2][j];
             }
             else
             {
                 --i;//没有成功写入新的值，不移动当前片段指向
             }
             ++j;//验证一个历史基因，向后走一个
+        }
+    }
+
+    for(int i = 0; i < child1.size(); ++i)
+    {
+        if(child1set.find(i) == child1set.end())
+        {
+            cout << "ox error" << endl;
         }
     }
 
