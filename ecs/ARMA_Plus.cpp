@@ -190,7 +190,7 @@ void formatData(vector<double> data,vector<double> bias,int p, int q,int pp){
  */
 
 vector<double> getParm_ab(vector<double> data,vector<double> bias,int p, int q,int pp){
-	formatData(data,bias,p,q,pp);	
+	formatData(data,bias,p,q,pp);
 	
 	vector<vector<double> > ab, tx,invxe,tmp, r_XE, c_XE;
 	c_XE = ConCols(t(X),t(E));

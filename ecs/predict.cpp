@@ -41,7 +41,7 @@ vector<int> vec_predict_demand(16, 0);
 vector<double> vec_predict_demand_double(16, 0);
 
 extern double xx[];
-int p=1,q=8,pp=9;//一定注意p，q的取值是通过数据计算后，估计出来的。
+int p=7,q=7,pp=20;//一定注意p，q的取值是通过数据计算后，估计出来的。
 
 //你要完成的功能总入口
 void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int data_num, char * filename)

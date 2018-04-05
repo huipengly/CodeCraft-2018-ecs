@@ -161,7 +161,9 @@ vector<vector<double> > inv(vector<vector<double> > x)
 		for(int j = 0; j < size; ++j)
 		{
 			A[i * size + j] = x[i][j];
+			cout << A[i * size + j] << " ";
 		}
+		cout <<  ';' << endl;
 	}
 
 	if(!Gauss(A, B, size))
