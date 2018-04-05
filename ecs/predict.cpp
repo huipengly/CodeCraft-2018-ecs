@@ -217,14 +217,17 @@ void predictDay()
     {
         pre.push_back(predict_fun(ArmaData,bias,a,b,p,q,train_day + 1 + i));
     }
-//    if(vec_predict_demand[flavor] < 0)
-//    {
-//        vec_predict_demand[flavor] = 0;
-//    }
     double psum = fabs(accumulate(pre.begin(), pre.end(), 0));
-    cout << "predict sum : " << psum << endl;
-    cout << "act sum : 92" << endl;
-    cout << "score : " << (1 -  fabs(92 - psum)/(92 + psum) )* 100 << endl;
+
+    vector<double> sumEach = sumEachFlavor();
+    double sumAll = accumulate(ArmaData.begin(), ArmaData.end(), 0);
+    for(int flavor = 1; flavor < 16; flavor++)
+    {
+        if (flavor_type_to_predict[flavor])
+        {
+            vec_predict_demand[flavor] = static_cast<int>(sumEach[flavor] / sumAll * psum);
+        }
+    }
 }
 
 vector<double> sumAllFlavor()
