@@ -163,7 +163,7 @@ void formatData(vector<double> data,vector<double> bias,int p, int q,int pp){
 	for(int i=pp;i<n-q;i++){
 		vector<double> tmp;
 		for(int j=0;j<p;j++){
-			tmp.push_back(data[i+q-j]);
+			tmp.push_back(data[i+q-j-1]);
 		}
 		X.push_back(tmp);
 	}
@@ -171,7 +171,7 @@ void formatData(vector<double> data,vector<double> bias,int p, int q,int pp){
 	for(int i=0;i<bias.size()-q;i++){
 		vector<double> tmp;
 		for(int j=0;j<q;j++){
-			tmp.push_back(bias[i+q-j]);
+			tmp.push_back(bias[i+q-j-1]);
 		}
 		E.push_back(tmp);
 	}
