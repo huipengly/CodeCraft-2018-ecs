@@ -183,10 +183,10 @@ void predictDay()
         cout << "--pp" << endl;
         ta = LeastSquares(ArmaData,pp);
     }
-    cout<<"根据AR模型得到的参数ta个数:  "<<ta.size()<<endl;
-    for(int i=0;i<ta.size();i++){
-        cout<<"ta["<<i<<"] = "<<ta[i]<<endl;
-    }
+//    cout<<"根据AR模型得到的参数ta个数:  "<<ta.size()<<endl;
+//    for(int i=0;i<ta.size();i++){
+//        cout<<"ta["<<i<<"] = "<<ta[i]<<endl;
+//    }
 
     //残差
     vector<double> bias = getBiasSeries(ArmaData,ta,pp);
@@ -199,19 +199,19 @@ void predictDay()
 
     vector<double> a(ab.begin(),ab.begin()+p);
     vector<double> b(ab.begin()+p,ab.begin()+p+q);
-    cout<<"参数a个数:  "<<a.size()<<endl;
-    for(int i=0;i<a.size();i++){
-        cout<<"a["<<i<<"] = "<<a[i]<<endl;
-    }
-    cout<<"参数b个数:  "<<b.size()<<endl;
-    for(int i=0;i<b.size();i++){
-        cout<<"b["<<i<<"] = "<<b[i]<<endl;
-    }
+//    cout<<"参数a个数:  "<<a.size()<<endl;
+//    for(int i=0;i<a.size();i++){
+//        cout<<"a["<<i<<"] = "<<a[i]<<endl;
+//    }
+//    cout<<"参数b个数:  "<<b.size()<<endl;
+//    for(int i=0;i<b.size();i++){
+//        cout<<"b["<<i<<"] = "<<b[i]<<endl;
+//    }
 
 //    calPQ_N(ArmaData,bias,a,b,p,q);
 
-    cout << "!!!!!" << endl;
-    cout<< "predict: " <<predict_fun(ArmaData,bias,a,b,p,q,train_day + 1)<<endl;
+//    cout << "!!!!!" << endl;
+//    cout<< "predict: " <<predict_fun(ArmaData,bias,a,b,p,q,train_day + 1)<<endl;
 
     for(int i = 0; i < predict_day; ++i)
     {

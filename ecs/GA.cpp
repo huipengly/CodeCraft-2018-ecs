@@ -9,6 +9,7 @@
 #include <string>
 #include <cstring>
 #include <iostream>
+#include <set>
 
 using namespace std;
 
@@ -71,7 +72,7 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
         //计算各个基因适值
 
 //    //轮盘赌
-//        roulette_build();
+        roulette_build();
 //    cout << roulette_choose() << endl;
 
         //交叉
@@ -249,84 +250,58 @@ void order_crossover(int parents1, int parents2, vector<vector<int>> &children)
     }
 
     //交换变异段
-    auto it1 = child1.begin();
-    auto it2 = child2.begin();
-    swap_ranges(it1 + crossover_start, it1 + crossover_end, it2 + crossover_start);
+    swap_ranges(next(child1.begin(), crossover_start), next(child1.begin(), crossover_end), next(child2.begin(), crossover_start));
 
-    //临时基因变量，存储的是从变异尾端到基因尾端再加上一段完整的父代基因，用来顺序加入新基因
-    //填入剩余序列
-    //子代1
-    vector<int> temp_gene11;
-    copy(population[parents1].begin() + crossover_end, population[parents1].end(), back_inserter(temp_gene11));
-    copy(population[parents1].begin(), population[parents1].end(), back_inserter(temp_gene11));
-    auto it_temp_gene = temp_gene11.begin();
-    vector<int> temp_crossover_part;
-    copy(child1.begin() + crossover_start, child1.begin() + crossover_end, back_inserter(temp_crossover_part));
-    sort(temp_crossover_part.begin(), temp_crossover_part.end());
-    for(auto it = (child1.begin() + crossover_end); it != child1.end(); ++it)
+    //set记录交换的片段
+    set<int> swapPiece2(next(child1.begin(), crossover_start), next(child1.begin(), crossover_end));
+    set<int> swapPiece1(next(child2.begin(), crossover_start), next(child2.begin(), crossover_end));
+
+    //i是用来在当前段操作，j在历史基因上搜索
+    for(int i = 0, j = 0; i < child1.size(); ++i)
     {
-//        int diss = distance(it, child1.end());
-        while(true)
+        if ((i >= crossover_start) && (i < crossover_end))
         {
-//            bool aaaa = binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene);
-            //binary_search函数需要排序才能搜索
-            if(!binary_search(temp_crossover_part.begin(), temp_crossover_part.end(), *it_temp_gene))
-            {
-                break;
-            }
-            ++it_temp_gene;
+            //交换段不处理
+            continue;
         }
-        *it = *it_temp_gene;
-        ++it_temp_gene;
+        else
+        {
+            //find()  ，返回给定值值得定位器，如果没找到则返回end()。
+            if(swapPiece2.find(population[parents1][j]) == swapPiece2.end())
+            {
+                //没有在交换段则赋值
+                child1[i] = population[parents1][j];
+            }
+            else
+            {
+                --i;//没有成功写入新的值，不移动当前片段指向
+            }
+            ++j;//验证一个历史基因，向后走一个
+        }
     }
-    for(auto it = child1.begin(); it != (child1.begin() + crossover_start); ++it)
+
+    //i是用来在当前段操作，j在历史基因上搜索
+    for(int i = 0, j = 0; i < child1.size(); ++i)
     {
-//        int diss = distance(it, child1.end());
-        while(true)
+        if ((i >= crossover_start) && (i < crossover_end))
         {
-//            bool aaaa = binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene);
-            if(!binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene))
-            {
-                break;
-            }
-            ++it_temp_gene; //如果有跟交叉部分重复的，则继续向下找
+            //交换段不处理
+            continue;
         }
-        *it = *it_temp_gene;
-        ++it_temp_gene;     //处理完一个，继续向下处理
-    }
-    //子代2
-     vector<int> temp_gene12;
-    copy(population[parents2].begin() + crossover_end, population[parents2].end(), back_inserter(temp_gene11));
-    copy(population[parents2].begin(), population[parents2].end(), back_inserter(temp_gene11));
-    it_temp_gene = temp_gene11.begin();
-    temp_crossover_part.clear();
-    copy(child2.begin() + crossover_start, child2.begin() + crossover_end, back_inserter(temp_crossover_part));
-    sort(temp_crossover_part.begin(), temp_crossover_part.end());
-    for(auto it = (child2.begin() + crossover_end); it != child2.end(); ++it)
-    {
-        while(true)
+        else
         {
-            if(!binary_search(temp_crossover_part.begin(), temp_crossover_part.end(), *it_temp_gene))
+            //find()  ，返回给定值值得定位器，如果没找到则返回end()。
+            if(swapPiece2.find(population[parents1][j]) == swapPiece2.end())
             {
-                break;
+                //没有在交换段则赋值
+                child1[i] = population[parents1][j];
             }
-            ++it_temp_gene;
-        }
-        *it = *it_temp_gene;
-        ++it_temp_gene;
-    }
-    for(auto it = child2.begin(); it != (child2.begin() + crossover_start); ++it)
-    {
-        while(true)
-        {
-            if(!binary_search(child2.begin() + crossover_start, child2.begin() + crossover_end, *it_temp_gene))
+            else
             {
-                break;
+                --i;//没有成功写入新的值，不移动当前片段指向
             }
-            ++it_temp_gene; //如果有跟交叉部分重复的，则继续向下找
+            ++j;//验证一个历史基因，向后走一个
         }
-        *it = *it_temp_gene;
-        ++it_temp_gene;     //处理完一个，继续向下处理
     }
 
     //将交叉好的保存到子代
