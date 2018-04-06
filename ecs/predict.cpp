@@ -174,7 +174,7 @@ int diffDay(struct tm end, struct tm start)
 }
 vector<double> ta;
 vector<double> ArmaData;
-int p=7,q=7,pp=17;//一定注意p，q的取值是通过数据计算后，估计出来的。
+int p=3,q=3,pp=22;//一定注意p，q的取值是通过数据计算后，估计出来的。
 vector<double> pre;
 void predictDay()
 {
@@ -297,7 +297,7 @@ vector<double> sumLastDayFlavor(int n)
 }
 
 vector<vector<double>> trainMA;
-int day_ma = 7;
+int day_ma = 3;
 void dataMoveAvg()
 {
     trainMA.resize(16);
