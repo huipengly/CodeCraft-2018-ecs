@@ -174,7 +174,7 @@ int diffDay(struct tm end, struct tm start)
 }
 vector<double> ta;
 vector<double> ArmaData;
-int p=8,q=7,pp=15;//一定注意p，q的取值是通过数据计算后，估计出来的。
+int p=3,q=3,pp=8;//一定注意p，q的取值是通过数据计算后，估计出来的。
 vector<double> pre;
 void predictDay()
 {
