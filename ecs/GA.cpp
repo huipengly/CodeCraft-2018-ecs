@@ -80,24 +80,27 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
         population.push_back(temp_gene);
     }
 
-    testPopulationOrder();
+//    testPopulationOrder();
 
+    //计算初始化的各个基因适值
     value();
     for(int i = 0; i < max_generations; ++i)
     {
-        //计算各个基因适值
 
-//    //轮盘赌
+        //轮盘赌构造轮盘
         roulette_build();
-//    cout << roulette_choose() << endl;
 
         //交叉
-        for (int i = 0; i < population_size / 2; i++)
+        for (auto crossOverCounter = 0; crossOverCounter < population_size / 2 - 2; crossOverCounter++)
         {
-            //FIXME:会报错
             order_crossover(roulette_choose(), roulette_choose(), children);
         }
-        roulette.clear();
+
+        //记录历史最优
+        fitness_value;
+        auto bestChild = max_element(utilization.begin(), utilization.end());
+        children.push_back(population[distance(utilization.begin(), bestChild)]);
+        children.push_back(population[distance(utilization.begin(), bestChild)]);
 
         testPopulationOrder();
 
@@ -239,6 +242,8 @@ double gene_deconding(vector<int> gene, vector<int> &cut_positon)
 //构造轮盘
 void roulette_build()
 {
+    //清除轮盘
+    roulette.clear();
     double sum = accumulate(fitness_value.begin(), fitness_value.end(), 0.0);
     for(auto it = fitness_value.begin(); it != fitness_value.end(); ++it)
     {
