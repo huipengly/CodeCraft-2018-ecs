@@ -174,7 +174,7 @@ int diffDay(struct tm end, struct tm start)
 }
 vector<double> ta;
 vector<double> ArmaData;
-int p=3,q=3,pp=8;//一定注意p，q的取值是通过数据计算后，估计出来的。
+int p=7,q=7,pp=17;//一定注意p，q的取值是通过数据计算后，估计出来的。
 vector<double> pre;
 void predictDay()
 {
@@ -225,16 +225,24 @@ void predictDay()
 
     double psum = predict_fun(ArmaData,bias,a,b,p,q,train_day + predict_day);
 
-//    vector<double> sumEach = sumEachFlavor();
-    double aaa[] = {0.020993702,0.064380686,0.027291812,0.012596221,0.151154654,0.069279216,0.028691393,0.254023793,0.083974808,0.013995801,0.078376487,0.046885934,0.021693492,0.097270819,0.029391183};
-    vector<double> sumEach = sumLastDayFlavor(7);
+    vector<double> sumEach = sumEachFlavor();
+//    double aaa[] = {0.020993702,0.064380686,0.027291812,0.012596221,0.151154654,0.069279216,0.028691393,0.254023793,0.083974808,0.013995801,0.078376487,0.046885934,0.021693492,0.097270819,0.029391183};
+//    vector<double> sumEach = sumLastDayFlavor(7);
     double sumAll = accumulate(sumEach.begin(), sumEach.end(), 0);
     for(int flavor = 1; flavor < 16; flavor++)
     {
         if (flavor_type_to_predict[flavor])
         {
-//            vec_predict_demand[flavor] = static_cast<int>(sumEach[flavor] / sumAll * psum * ((0.4 * rand()/RAND_MAX) + 0.8));
-            vec_predict_demand[flavor] = static_cast<int>(aaa[flavor] * psum );
+            vec_predict_demand[flavor] = static_cast<int>(sumEach[flavor] / sumAll * psum * ((0.4 * rand()/RAND_MAX) + 0.8));
+//            vec_predict_demand[flavor] = static_cast<int>(aaa[flavor] * psum );
+//            if(sumEach[flavor] / sumAll < 0.01)
+//            {
+//                vec_predict_demand[flavor] = static_cast<int>(5.0 * rand() / RAND_MAX);
+//            }
+            if(vec_predict_demand[flavor] < 0)
+            {
+                vec_predict_demand[flavor] = 0;
+            }
         }
     }
 }
