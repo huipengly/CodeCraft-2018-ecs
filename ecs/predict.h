@@ -39,6 +39,6 @@ int diffDay(struct tm end, struct tm start);        //计算日期差
 void predictDay();
 vector<double> sumAllFlavor();
 vector<double> sumEachFlavor();
-vector<double> sumLast30DayFlavor();
+vector<double> sumLastDayFlavor(int n);
 
 #endif

@@ -220,7 +220,7 @@ void predictDay()
     double psum = fabs(accumulate(pre.begin(), pre.end(), 0));
 
 //    vector<double> sumEach = sumEachFlavor();
-    vector<double> sumEach = sumLast30DayFlavor();
+    vector<double> sumEach = sumLastDayFlavor(7);
     double sumAll = accumulate(sumEach.begin(), sumEach.end(), 0);
     for(int flavor = 1; flavor < 16; flavor++)
     {
@@ -264,12 +264,12 @@ vector<double> sumEachFlavor()
     return sumEach;
 }
 
-vector<double> sumLast30DayFlavor()
+vector<double> sumLastDayFlavor(int n)
 {
     vector<double> sumEach;
     sumEach.resize(16);
 
-    for(int i = train_day-30; i < train_day; ++i)
+    for(int i = train_day-n; i < train_day; ++i)
     {
         for(int flavor = 0; flavor < 16; ++flavor)
         {
