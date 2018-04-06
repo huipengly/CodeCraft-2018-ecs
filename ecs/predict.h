@@ -40,5 +40,6 @@ void predictDay();
 vector<double> sumAllFlavor();
 vector<double> sumEachFlavor();
 vector<double> sumLastDayFlavor(int n);
+void dataMoveAvg();
 
 #endif

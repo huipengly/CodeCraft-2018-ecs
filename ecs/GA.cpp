@@ -23,7 +23,7 @@ vector<double> utilization;             //种群利用率
 vector<double> fitness_value;           //适值
 vector<double> roulette;                //轮盘赌概率区间
 const int variation_rate = 1;           //变异率
-const int max_generations = 10;         //进化代数
+const int max_generations = 100;         //进化代数
 
 void testPopulationOrder()
 {
@@ -123,6 +123,7 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
     //从最后一代中选择输出
     vector<double>::iterator result;
     result = max_element(utilization.begin(), utilization.end());
+    cout << "usage rate : " << 100 * (*result) << '%' << endl;
     int temp_dis = distance(utilization.begin(), result);
 //    utilization.ma
 

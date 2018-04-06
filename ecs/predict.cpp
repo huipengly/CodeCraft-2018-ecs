@@ -41,6 +41,8 @@ vector<int> vec_predict_demand(16, 0);
 vector<double> vec_predict_demand_double(16, 0);
 double allFlavorNum = 0;
 
+extern int day_ma;
+extern vector<vector<double>> trainMA;
 
 //你要完成的功能总入口
 void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int data_num, char * filename)
@@ -50,6 +52,8 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
     readInfo(info);
 
     readData(data, data_num);
+
+    dataMoveAvg();
 
     predictDay();
 
@@ -170,7 +174,7 @@ int diffDay(struct tm end, struct tm start)
 }
 vector<double> ta;
 vector<double> ArmaData;
-int p=8,q=7,pp=25;//一定注意p，q的取值是通过数据计算后，估计出来的。
+int p=8,q=7,pp=15;//一定注意p，q的取值是通过数据计算后，估计出来的。
 vector<double> pre;
 void predictDay()
 {
@@ -183,10 +187,10 @@ void predictDay()
         cout << "--pp" << endl;
         ta = LeastSquares(ArmaData,pp);
     }
-//    cout<<"根据AR模型得到的参数ta个数:  "<<ta.size()<<endl;
-//    for(int i=0;i<ta.size();i++){
-//        cout<<"ta["<<i<<"] = "<<ta[i]<<endl;
-//    }
+    cout<<"根据AR模型得到的参数ta个数:  "<<ta.size()<<endl;
+    for(int i=0;i<ta.size();i++){
+        cout<<"ta["<<i<<"] = "<<ta[i]<<endl;
+    }
 
     //残差
     vector<double> bias = getBiasSeries(ArmaData,ta,pp);
@@ -199,25 +203,27 @@ void predictDay()
 
     vector<double> a(ab.begin(),ab.begin()+p);
     vector<double> b(ab.begin()+p,ab.begin()+p+q);
-//    cout<<"参数a个数:  "<<a.size()<<endl;
-//    for(int i=0;i<a.size();i++){
-//        cout<<"a["<<i<<"] = "<<a[i]<<endl;
-//    }
-//    cout<<"参数b个数:  "<<b.size()<<endl;
-//    for(int i=0;i<b.size();i++){
-//        cout<<"b["<<i<<"] = "<<b[i]<<endl;
-//    }
+    cout<<"参数a个数:  "<<a.size()<<endl;
+    for(int i=0;i<a.size();i++){
+        cout<<"a["<<i<<"] = "<<a[i]<<endl;
+    }
+    cout<<"参数b个数:  "<<b.size()<<endl;
+    for(int i=0;i<b.size();i++){
+        cout<<"b["<<i<<"] = "<<b[i]<<endl;
+    }
 
 //    calPQ_N(ArmaData,bias,a,b,p,q);
 
 //    cout << "!!!!!" << endl;
 //    cout<< "predict: " <<predict_fun(ArmaData,bias,a,b,p,q,train_day + 1)<<endl;
 
-    for(int i = 0; i < predict_day; ++i)
-    {
-        pre.push_back(predict_fun(ArmaData,bias,a,b,p,q,train_day + 1 + i));
-    }
-    double psum = fabs(accumulate(pre.begin(), pre.end(), 0));
+//    for(int i = 0; i < predict_day; ++i)
+//    {
+//        pre.push_back(predict_fun(ArmaData,bias,a,b,p,q,train_day + 1 + i));
+//    }
+//    double psum = fabs(accumulate(pre.begin(), pre.end(), 0));
+
+    double psum = predict_fun(ArmaData,bias,a,b,p,q,train_day + predict_day);
 
 //    vector<double> sumEach = sumEachFlavor();
     double aaa[] = {0.020993702,0.064380686,0.027291812,0.012596221,0.151154654,0.069279216,0.028691393,0.254023793,0.083974808,0.013995801,0.078376487,0.046885934,0.021693492,0.097270819,0.029391183};
@@ -241,7 +247,7 @@ vector<double> sumAllFlavor()
     {
         for(int flavor = 1; flavor < 16; ++flavor)
         {
-            sumAll[i] += train[flavor][i];
+            sumAll[i] += trainMA[flavor][i];
         }
     }
 
@@ -280,4 +286,32 @@ vector<double> sumLastDayFlavor(int n)
     }
 
     return sumEach;
+}
+
+vector<vector<double>> trainMA;
+int day_ma = 7;
+void dataMoveAvg()
+{
+    trainMA.resize(16);
+    for (int i = 0; i < 16; ++i)
+    {
+        trainMA[i].resize(train_day);
+    }
+//    train
+    for(int flavor = 1; flavor < 16; ++flavor)
+    {
+        for(int MAday = day_ma; MAday < train_day; ++MAday)
+        {
+            for (int i = MAday - 7; i < MAday; ++i)
+            {
+                if(train[flavor][i] != 0)
+                {
+                    int a = 0;
+                }
+                trainMA[flavor][MAday - day_ma] += train[flavor][i];
+            }
+            trainMA[flavor][MAday - day_ma] /= 1.0 * day_ma;//这里记录第一个数据是前7天的平滑
+        }
+    }
+    train_day -= day_ma;
 }
