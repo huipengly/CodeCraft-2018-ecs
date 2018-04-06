@@ -220,6 +220,7 @@ void predictDay()
     double psum = fabs(accumulate(pre.begin(), pre.end(), 0));
 
 //    vector<double> sumEach = sumEachFlavor();
+    double aaa[] = {0.020993702,0.064380686,0.027291812,0.012596221,0.151154654,0.069279216,0.028691393,0.254023793,0.083974808,0.013995801,0.078376487,0.046885934,0.021693492,0.097270819,0.029391183};
     vector<double> sumEach = sumLastDayFlavor(7);
     double sumAll = accumulate(sumEach.begin(), sumEach.end(), 0);
     for(int flavor = 1; flavor < 16; flavor++)
@@ -227,7 +228,7 @@ void predictDay()
         if (flavor_type_to_predict[flavor])
         {
 //            vec_predict_demand[flavor] = static_cast<int>(sumEach[flavor] / sumAll * psum * ((0.4 * rand()/RAND_MAX) + 0.8));
-            vec_predict_demand[flavor] = static_cast<int>(sumEach[flavor] / sumAll * psum );
+            vec_predict_demand[flavor] = static_cast<int>(aaa[flavor] * psum );
         }
     }
 }
