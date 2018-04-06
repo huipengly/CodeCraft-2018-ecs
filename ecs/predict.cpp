@@ -170,7 +170,7 @@ int diffDay(struct tm end, struct tm start)
 }
 vector<double> ta;
 vector<double> ArmaData;
-int p=15,q=7,pp=22;//一定注意p，q的取值是通过数据计算后，估计出来的。
+int p=8,q=7,pp=25;//一定注意p，q的取值是通过数据计算后，估计出来的。
 vector<double> pre;
 void predictDay()
 {
@@ -219,8 +219,9 @@ void predictDay()
     }
     double psum = fabs(accumulate(pre.begin(), pre.end(), 0));
 
-    vector<double> sumEach = sumEachFlavor();
-    double sumAll = accumulate(ArmaData.begin(), ArmaData.end(), 0);
+//    vector<double> sumEach = sumEachFlavor();
+    vector<double> sumEach = sumLast30DayFlavor();
+    double sumAll = accumulate(sumEach.begin(), sumEach.end(), 0);
     for(int flavor = 1; flavor < 16; flavor++)
     {
         if (flavor_type_to_predict[flavor])
@@ -251,6 +252,23 @@ vector<double> sumEachFlavor()
     sumEach.resize(16);
 
     for(int i = 0; i < train_day; ++i)
+    {
+        for(int flavor = 0; flavor < 16; ++flavor)
+        {
+            sumEach[flavor] += train[flavor][i];
+            allFlavorNum += train[flavor][i];
+        }
+    }
+
+    return sumEach;
+}
+
+vector<double> sumLast30DayFlavor()
+{
+    vector<double> sumEach;
+    sumEach.resize(16);
+
+    for(int i = train_day-30; i < train_day; ++i)
     {
         for(int flavor = 0; flavor < 16; ++flavor)
         {
