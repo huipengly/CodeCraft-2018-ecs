@@ -226,7 +226,8 @@ void predictDay()
     {
         if (flavor_type_to_predict[flavor])
         {
-            vec_predict_demand[flavor] = static_cast<int>(sumEach[flavor] / sumAll * psum * ((0.4 * rand()/RAND_MAX) + 0.8));
+//            vec_predict_demand[flavor] = static_cast<int>(sumEach[flavor] / sumAll * psum * ((0.4 * rand()/RAND_MAX) + 0.8));
+            vec_predict_demand[flavor] = static_cast<int>(sumEach[flavor] / sumAll * psum );
         }
     }
 }
