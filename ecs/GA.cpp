@@ -9,7 +9,6 @@
 #include <string>
 #include <cstring>
 #include <iostream>
-#include <set>
 
 using namespace std;
 
@@ -23,22 +22,7 @@ vector<double> utilization;             //种群利用率
 vector<double> fitness_value;           //适值
 vector<double> roulette;                //轮盘赌概率区间
 const int variation_rate = 1;           //变异率
-const int max_generations = 100;         //进化代数
-
-void testPopulationOrder()
-{
-    for(auto it = population.begin(); it != population.end(); ++it)
-    {
-        set<int> popset(it->begin(), it->end());
-        for (int i = 0; i < it->size(); ++i)
-        {
-            if (popset.find(i) == popset.end())
-            {
-                cout << "population order error" << endl;
-            }
-        }
-    }
-}
+const int max_generations = 10;         //进化代数
 
 void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outputs, int population_size)
 {
@@ -70,39 +54,31 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
 
     //产生一个随机序列
     vector<int> temp_gene;
-    for (int j = 0; j < static_cast<int>(flavors_to_place.size()); j++)
-    {
-        temp_gene.push_back(j);
-    }
     for(int i = 0; i < population_size; ++i)
     {
+        for (int j = 0; j < static_cast<int>(flavors_to_place.size()); j++)
+        {
+            temp_gene.push_back(j);
+        }
         random_shuffle(temp_gene.begin(), temp_gene.end());
         population.push_back(temp_gene);
+        temp_gene.clear();
     }
 
-//    testPopulationOrder();
-
-    //计算初始化的各个基因适值
     value();
     for(int i = 0; i < max_generations; ++i)
     {
+        //计算各个基因适值
 
-        //轮盘赌构造轮盘
-        roulette_build();
+//    //轮盘赌
+//    roulette_build();
+//    cout << roulette_choose() << endl;
 
         //交叉
-        for (auto crossOverCounter = 0; crossOverCounter < population_size / 2 - 2; crossOverCounter++)
+        for (int i = 0; i < population_size / 2; i++)
         {
             order_crossover(roulette_choose(), roulette_choose(), children);
         }
-
-        //记录历史最优
-        fitness_value;
-        auto bestChild = max_element(utilization.begin(), utilization.end());
-        children.push_back(population[distance(utilization.begin(), bestChild)]);
-        children.push_back(population[distance(utilization.begin(), bestChild)]);
-
-        testPopulationOrder();
 
         //变异
 //    children = population;
@@ -112,10 +88,7 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
         population = children;
         children.clear();
 
-        testPopulationOrder();
-
         //计算新子代适值
-        fitness_value.clear();
         value();
     }
 
@@ -123,7 +96,6 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
     //从最后一代中选择输出
     vector<double>::iterator result;
     result = max_element(utilization.begin(), utilization.end());
-    cout << "usage rate : " << 100 * (*result) << '%' << endl;
     int temp_dis = distance(utilization.begin(), result);
 //    utilization.ma
 
@@ -243,8 +215,6 @@ double gene_deconding(vector<int> gene, vector<int> &cut_positon)
 //构造轮盘
 void roulette_build()
 {
-    //清除轮盘
-    roulette.clear();
     double sum = accumulate(fitness_value.begin(), fitness_value.end(), 0.0);
     for(auto it = fitness_value.begin(); it != fitness_value.end(); ++it)
     {
@@ -256,22 +226,16 @@ void roulette_build()
 int roulette_choose()
 {
     double rand_num = static_cast<double>(rand()) / RAND_MAX;
+    return static_cast<int>(distance(roulette.begin(), upper_bound(roulette.begin(), roulette.end(), rand_num)));
     //upper_bound返回指向第一个大于给定值的元素的迭代器
-    int num = static_cast<int>(distance(roulette.begin(), upper_bound(roulette.begin(), roulette.end(), rand_num)));
-    return num - 1;//返回第一个大于的，是在前一个到这个的区间里。
 }
 
 //顺序交叉
 void order_crossover(int parents1, int parents2, vector<vector<int>> &children)
 {
     vector<int> child1, child2;
-    if((parents1 >= population.size()) || (parents2 >= population.size()))
-    {
-        int a = 0;
-    }
     child1 = population[parents1];
     child2 = population[parents2];
-
 
     //交换变量为start开始到end前一个，最后一个量不进行交换
     int crossover_start = static_cast<int>(floor(1.0 * population[parents1].size() * rand() / RAND_MAX));
@@ -283,88 +247,84 @@ void order_crossover(int parents1, int parents2, vector<vector<int>> &children)
     }
 
     //交换变异段
-    swap_ranges(next(child1.begin(), crossover_start), next(child1.begin(), crossover_end), next(child2.begin(), crossover_start));
+    auto it1 = child1.begin();
+    auto it2 = child2.begin();
+    swap_ranges(it1 + crossover_start, it1 + crossover_end, it2 + crossover_start);
 
-    //set记录交换的片段
-    set<int> swapPiece2(next(child1.begin(), crossover_start), next(child1.begin(), crossover_end));
-    set<int> swapPiece1(next(child2.begin(), crossover_start), next(child2.begin(), crossover_end));
-
-    //i是用来在当前段操作，j在历史基因上搜索
-    for(int i = 0, j = 0; i < child1.size(); ++i)
+    //临时基因变量，存储的是从变异尾端到基因尾端再加上一段完整的父代基因，用来顺序加入新基因
+    //填入剩余序列
+    //子代1
+    vector<int> temp_gene11;
+    copy(population[parents1].begin() + crossover_end, population[parents1].end(), back_inserter(temp_gene11));
+    copy(population[parents1].begin(), population[parents1].end(), back_inserter(temp_gene11));
+    auto it_temp_gene = temp_gene11.begin();
+    vector<int> temp_crossover_part;
+    copy(child1.begin() + crossover_start, child1.begin() + crossover_end, back_inserter(temp_crossover_part));
+    sort(temp_crossover_part.begin(), temp_crossover_part.end());
+    for(auto it = (child1.begin() + crossover_end); it != child1.end(); ++it)
     {
-        if ((i >= crossover_start) && (i < crossover_end))
+//        int diss = distance(it, child1.end());
+        while(true)
         {
-            //交换段不处理
-            continue;
+//            bool aaaa = binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene);
+            //binary_search函数需要排序才能搜索
+            if(!binary_search(temp_crossover_part.begin(), temp_crossover_part.end(), *it_temp_gene))
+            {
+                break;
+            }
+            ++it_temp_gene;
         }
-        else
-        {
-            //find()  ，返回给定值值得定位器，如果没找到则返回end()。
-            if(swapPiece2.find(population[parents1][j]) == swapPiece2.end())
-            {
-                //没有在交换段则赋值
-                child1[i] = population[parents1][j];
-            }
-            else
-            {
-                --i;//没有成功写入新的值，不移动当前片段指向
-            }
-            ++j;//验证一个历史基因，向后走一个
-            if(j > child1.size())
-            {
-                cout << "error : ox j out of range" << endl;
-            }
-        }
+        *it = *it_temp_gene;
+        ++it_temp_gene;
     }
-
-    vector<int> childTest;
-    for(int i = 0; i < child1.size(); ++i)
+    for(auto it = child1.begin(); it != (child1.begin() + crossover_start); ++it)
     {
-        childTest.push_back(i);
-    }
-    set<int> child1set(childTest.begin(), childTest.end());
-    for(int i = 0; i < child1.size(); ++i)
-    {
-        if(child1set.find(i) == child1set.end())
+//        int diss = distance(it, child1.end());
+        while(true)
         {
-            cout << "ox error" << endl;
-        }
-    }
-
-    //i是用来在当前段操作，j在历史基因上搜索
-    for(int i = 0, j = 0; i < child2.size(); ++i)
-    {
-        if(j > population[parents2].size())
-        {
-            int b = 0;
-        }
-        if ((i >= crossover_start) && (i < crossover_end))
-        {
-            //交换段不处理
-            continue;
-        }
-        else
-        {
-            //find()  ，返回给定值值得定位器，如果没找到则返回end()。
-            if(swapPiece1.find(population[parents2][j]) == swapPiece1.end())
+//            bool aaaa = binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene);
+            if(!binary_search(child1.begin() + crossover_start, child1.begin() + crossover_end, *it_temp_gene))
             {
-                //没有在交换段则赋值
-                child2[i] = population[parents2][j];
+                break;
             }
-            else
-            {
-                --i;//没有成功写入新的值，不移动当前片段指向
-            }
-            ++j;//验证一个历史基因，向后走一个
+            ++it_temp_gene; //如果有跟交叉部分重复的，则继续向下找
         }
+        *it = *it_temp_gene;
+        ++it_temp_gene;     //处理完一个，继续向下处理
     }
-
-    for(int i = 0; i < child1.size(); ++i)
+    //子代2
+     vector<int> temp_gene12;
+    copy(population[parents2].begin() + crossover_end, population[parents2].end(), back_inserter(temp_gene11));
+    copy(population[parents2].begin(), population[parents2].end(), back_inserter(temp_gene11));
+    it_temp_gene = temp_gene11.begin();
+    temp_crossover_part.clear();
+    copy(child2.begin() + crossover_start, child2.begin() + crossover_end, back_inserter(temp_crossover_part));
+    sort(temp_crossover_part.begin(), temp_crossover_part.end());
+    for(auto it = (child2.begin() + crossover_end); it != child2.end(); ++it)
     {
-        if(child1set.find(i) == child1set.end())
+        while(true)
         {
-            cout << "ox error" << endl;
+            if(!binary_search(temp_crossover_part.begin(), temp_crossover_part.end(), *it_temp_gene))
+            {
+                break;
+            }
+            ++it_temp_gene;
         }
+        *it = *it_temp_gene;
+        ++it_temp_gene;
+    }
+    for(auto it = child2.begin(); it != (child2.begin() + crossover_start); ++it)
+    {
+        while(true)
+        {
+            if(!binary_search(child2.begin() + crossover_start, child2.begin() + crossover_end, *it_temp_gene))
+            {
+                break;
+            }
+            ++it_temp_gene; //如果有跟交叉部分重复的，则继续向下找
+        }
+        *it = *it_temp_gene;
+        ++it_temp_gene;     //处理完一个，继续向下处理
     }
 
     //将交叉好的保存到子代

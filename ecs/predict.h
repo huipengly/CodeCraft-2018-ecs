@@ -3,9 +3,6 @@
 
 #include "lib_io.h"
 #include <ctime>
-#include <vector>
-
-using namespace std;
 
 //物理机信息
 struct PhysicalMachine
@@ -36,10 +33,5 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
 void readInfo(char * info[MAX_INFO_NUM]);
 void readData(char * data[MAX_INFO_NUM], int &data_num);
 int diffDay(struct tm end, struct tm start);        //计算日期差
-void predictDay();
-vector<double> sumAllFlavor();
-vector<double> sumEachFlavor();
-vector<double> sumLastDayFlavor(int n);
-void dataMoveAvg();
 
 #endif
