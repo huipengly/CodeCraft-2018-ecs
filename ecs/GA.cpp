@@ -119,7 +119,6 @@ void genetic_algorithm(vector<int> vec_predict_demand, vector<vector<int>> &outp
         value();
     }
 
-    //TODO:保留历史最优，最优保留遗传
     //从最后一代中选择输出
     vector<double>::iterator result;
     result = max_element(utilization.begin(), utilization.end());

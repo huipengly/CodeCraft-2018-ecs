@@ -49,60 +49,71 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
     {
         if(flavor_type_to_predict[flavor])
         {
-            int tempSum = 0;
+            double *mydata = train[flavor];
+            int mydata_num = train_day;
+            int tempSum1 = 0;
+            int tempSum2 = 0;
 
+            //最后七天平均
            for(int i = 1; i < 8; ++i)
            {
-               tempSum += train[flavor][train_day - i];
+               tempSum1 += train[flavor][train_day - i];
            }
 
-            vec_predict_demand[flavor] = static_cast<int>(tempSum/7.0 * predict_day);
-//           //最小二乘拟合
-//           //inv(H_inv*H)*H'*(temp);
-//           int fun_num = MAX_FUNCTION_NUM;       //函数阶数
-//           while(fun_num > 0)
-//           {
-//               double *H = new double[(mydata_num - fun_num) * fun_num]();
-//               double *H_trans = new double[fun_num * (mydata_num - fun_num)]();
-//               double *HH = new double[fun_num * fun_num]();
-//               double *HH_inv = new double[fun_num * fun_num]();
-//               double *res1 = new double[fun_num * (mydata_num - fun_num)]();
-//               //    double *parameter = new double[fun_num]();
-//               double parameter[MAX_FUNCTION_NUM] = {0};
-//
-//               for (int i = 0; i < mydata_num - fun_num; i++)
-//               {
-//                  for (int j = 0; j < fun_num; j++)
-//                  {
-//                      H[i * fun_num + j] = mydata[i + fun_num - j - 1];
-//                  }
-//               }
-//
-//               matrix_trans(H, mydata_num - fun_num, fun_num, H_trans);
-//               matrix_mul(H_trans, fun_num, mydata_num - fun_num, H, mydata_num - fun_num, fun_num, HH);
-//               if (!Gauss(HH, HH_inv, fun_num))
-//               {
-//                    //无法求逆就减小阶数
-//                    fun_num--;
-//#ifdef _DEBUG
-//                    cout << "Gauss fault!" << endl;
-//#endif
-//                    continue;
-//               };
-//               matrix_mul(HH_inv, fun_num, fun_num, H_trans, fun_num, mydata_num - fun_num, res1);
-//               matrix_mul(res1, fun_num, mydata_num - fun_num, mydata + fun_num, mydata_num - fun_num, 1, parameter);
-//
-//               //预测
-//               double mydata_last_fun_num[MAX_FUNCTION_NUM] = {0};//最后fun_num个数据，反向存储
-//               for (int i = 0; i < predict_day; i++)
-//               {
-//                  reverse_copy(&mydata[mydata_num - fun_num], &mydata[mydata_num], mydata_last_fun_num);
-//                  matrix_mul(mydata_last_fun_num, 1, fun_num, parameter, fun_num, 1, &mydata[mydata_num]);
-//                  vec_predict_demand[flavor] += static_cast<int>(round(mydata[mydata_num]));
-//                  mydata_num++;
-//               }
-//               break;//可以求逆就输出结果
-//           }
+           //最小二乘拟合
+           //inv(H_inv*H)*H'*(temp);
+           int fun_num = MAX_FUNCTION_NUM;       //函数阶数
+           while(fun_num > 0)
+           {
+               double *H = new double[(mydata_num - fun_num) * fun_num]();
+               double *H_trans = new double[fun_num * (mydata_num - fun_num)]();
+               double *HH = new double[fun_num * fun_num]();
+               double *HH_inv = new double[fun_num * fun_num]();
+               double *res1 = new double[fun_num * (mydata_num - fun_num)]();
+               //    double *parameter = new double[fun_num]();
+               double parameter[MAX_FUNCTION_NUM] = {0};
+
+               for (int i = 0; i < mydata_num - fun_num; i++)
+               {
+                  for (int j = 0; j < fun_num; j++)
+                  {
+                      H[i * fun_num + j] = mydata[i + fun_num - j - 1];
+                  }
+               }
+
+               matrix_trans(H, mydata_num - fun_num, fun_num, H_trans);
+               matrix_mul(H_trans, fun_num, mydata_num - fun_num, H, mydata_num - fun_num, fun_num, HH);
+               if (!Gauss(HH, HH_inv, fun_num))
+               {
+                    //无法求逆就减小阶数
+                    fun_num--;
+#ifdef _DEBUG
+                    cout << "Gauss fault!" << endl;
+#endif
+                    continue;
+               };
+               matrix_mul(HH_inv, fun_num, fun_num, H_trans, fun_num, mydata_num - fun_num, res1);
+               matrix_mul(res1, fun_num, mydata_num - fun_num, mydata + fun_num, mydata_num - fun_num, 1, parameter);
+
+               //预测
+               double mydata_last_fun_num[MAX_FUNCTION_NUM] = {0};//最后fun_num个数据，反向存储
+               for (int i = 0; i < predict_day; i++)
+               {
+                  reverse_copy(&mydata[mydata_num - fun_num], &mydata[mydata_num], mydata_last_fun_num);
+                  matrix_mul(mydata_last_fun_num, 1, fun_num, parameter, fun_num, 1, &mydata[mydata_num]);
+                  tempSum2 += static_cast<int>(round(mydata[mydata_num]));
+                  mydata_num++;
+               }
+
+               if(fabs(tempSum1 - tempSum2) / tempSum1 > 0.5)
+               {
+                   vec_predict_demand[flavor] = static_cast<int>(tempSum1/7.0 * predict_day * 0.7 + tempSum2 * 0.3);
+               } else
+               {
+                   vec_predict_demand[flavor] = static_cast<int>(tempSum1/7.0 * predict_day);
+               }
+               break;//可以求逆就输出结果
+           }
         }
     }
 
