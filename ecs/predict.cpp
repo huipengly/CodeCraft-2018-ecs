@@ -107,10 +107,10 @@ void predict_server(char * info[MAX_INFO_NUM], char * data[MAX_DATA_NUM], int da
 
                if(fabs(tempSum1 - tempSum2) / tempSum1 > 0.5)
                {
-                   vec_predict_demand[flavor] = static_cast<int>(tempSum1/7.0 * predict_day * 0.69 + tempSum2 * 0.3);
+                   vec_predict_demand[flavor] = static_cast<int>(tempSum1/7.0 * predict_day*0.7 + tempSum2 * 0.3);
                } else
                {
-                   vec_predict_demand[flavor] = static_cast<int>(tempSum1/7.0 * predict_day * 0.99);
+                   vec_predict_demand[flavor] = static_cast<int>(tempSum1/7.0 * predict_day);
                }
                break;//可以求逆就输出结果
            }
